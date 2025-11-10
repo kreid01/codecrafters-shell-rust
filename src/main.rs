@@ -13,7 +13,7 @@ fn main() -> ExitCode {
         if command.contains("exit") {
             return ExitCode::from(0);
         } else if command.contains("echo") {
-            println!("{}", str::replace(&command, "echo ", ""))
+            print!("{}", str::replace(&command, "echo ", ""))
         } else {
             println!("{}: command not found", command.trim());
         }
