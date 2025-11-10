@@ -1,5 +1,6 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
+use stdin::io::{self, Write}
 
 fn main() {
     print!("$ ");
