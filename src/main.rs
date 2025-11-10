@@ -17,6 +17,7 @@ fn main() -> ExitCode {
         } else if command.starts_with("type") {
             get_type(command);
         } else {
+            not_found(command)
         }
     }
 }
@@ -26,10 +27,14 @@ fn get_type(command: String) {
     if t.starts_with("type") || t.starts_with("echo") || t.starts_with("exit") {
         println!("{} is a shell builtin", t.trim());
     } else {
-        not_found(t)
+        command_not_found(t)
     }
 }
 
 fn not_found(command: String) {
     println!("{}: command not found", command.trim());
+}
+
+fn command_not_found(command: String) {
+    println!("{}: not found", command.trim());
 }
