@@ -26,7 +26,7 @@ fn get_type(command: String) {
     if t.starts_with("type") || t.starts_with("echo") || t.starts_with("exit") {
         println!("{} is a shell builtin", t.trim());
     } else {
-        not_found(command)
+        not_found(t)
     }
 }
 
