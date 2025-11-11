@@ -22,21 +22,6 @@ fn main() -> ExitCode {
     }
 }
 
-fn check_dirs(command: String) {
-    let binding = env::var("PATH").unwrap();
-    let dirs: Vec<&str> = binding.split(":").collect();
-
-    let t = command.replacen("type ", "", 1);
-
-    for dir in dirs {
-        if dir.to_string().contains(&t) {
-            println!("{} is {}", t, dir.to_string())
-        }
-    }
-
-    command_not_found(command)
-}
-
 fn get_type(command: String) {
     let t = command.replacen("type ", "", 1);
     if t.starts_with("type") || t.starts_with("echo") || t.starts_with("exit") {
@@ -44,6 +29,22 @@ fn get_type(command: String) {
     } else {
         check_dirs(command)
     }
+}
+
+fn check_dirs(command: String) {
+    let binding = env::var("PATH").unwrap();
+    let dirs: Vec<&str> = binding.split(":").collect();
+
+    let t = command.replacen("type ", "", 1);
+
+    for dir in dirs {
+        print(dir)
+        if dir.to_string().contains(&t) {
+            println!("{} is {}", t, dir.to_string())
+        }
+    }
+
+    command_not_found(command)
 }
 
 fn not_found(command: String) {
