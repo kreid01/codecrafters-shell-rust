@@ -1,5 +1,4 @@
 use std::env;
-use std::fs;
 use std::io::{self, Write};
 use std::process::ExitCode;
 
@@ -27,9 +26,11 @@ fn check_dirs(command: String) {
     let binding = env::var("PATH").unwrap();
     let dirs: Vec<&str> = binding.split(":").collect();
 
+    let t = command.replacen("type ", "", 1);
+
     for dir in dirs {
-        if dir.to_string().contains(&command) {
-            println!("{} is {}", command, dir.to_string())
+        if dir.to_string().contains(&t) {
+            println!("{} is {}", t, dir.to_string())
         }
     }
 
