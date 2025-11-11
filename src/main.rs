@@ -4,13 +4,6 @@ use std::io::{self, Write};
 use std::process::ExitCode;
 
 fn main() -> ExitCode {
-    let binding = env::var("PATH").unwrap();
-    let dirs: Vec<&str> = binding.split(":").collect();
-
-    for dir in dirs {
-        check_command(dir.to_string());
-    }
-
     loop {
         print!("$ ");
         io::stdout().flush().unwrap();
@@ -30,14 +23,17 @@ fn main() -> ExitCode {
     }
 }
 
-fn check_command(command: String) {
-    if command.starts_with("echo") {
-        print!("{}", str::replace(&command, "echo ", ""))
-    } else if command.starts_with("type") {
-        get_type(command);
-    } else {
-        not_found(command)
+fn check_dirs(command: String) {
+    let binding = env::var("PATH").unwrap();
+    let dirs: Vec<&str> = binding.split(":").collect();
+
+    for dir in dirs {
+        if dir.to_string().contains(&command) {
+            println!("{} is {}", command, dir.to_string())
+        }
     }
+
+    command_not_found(command)
 }
 
 fn get_type(command: String) {
@@ -45,7 +41,7 @@ fn get_type(command: String) {
     if t.starts_with("type") || t.starts_with("echo") || t.starts_with("exit") {
         println!("{} is a shell builtin", t.trim());
     } else {
-        command_not_found(t)
+        check_dirs(command)
     }
 }
 
