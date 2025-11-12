@@ -41,19 +41,22 @@ fn check_dirs(command: String) {
     let mut found = false;
 
     for dir in dirs {
-        for file in fs::read_dir(dir).unwrap() {
-            println!("{}", file.unwrap().path().display());
-            if true {
-                println!("{} is {}", t, dir.to_string());
-                found = true;
+        if let Ok(files) = fs::read_dir(dir) {
+            for file in files.flatten() {
+                if file.file_name().into_string().expect("should be a string") == t {
+                    println!("{} is {}", t.trim(), dir.to_string());
+                    found = true;
+                }
             }
-        }
+        };
     }
 
     if !found {
         command_not_found(command)
     }
 }
+
+// fn check_dirs(dir: &str) {}
 
 fn not_found(command: String) {
     println!("{}: command not found", command.trim());
