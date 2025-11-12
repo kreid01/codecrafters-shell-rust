@@ -3,6 +3,8 @@ use std::io::{self, Write};
 use std::os::unix::fs::PermissionsExt;
 use std::process::ExitCode;
 
+const BUILTINS: [&str; 3] = ["exit", "echo", "type"];
+
 fn main() -> ExitCode {
     loop {
         print!("$ ");
@@ -16,19 +18,21 @@ fn main() -> ExitCode {
         } else if command.starts_with("echo") {
             print!("{}", str::replace(&command, "echo ", ""))
         } else if command.starts_with("type") {
-            get_type(command);
+            execute_type(&command);
         } else {
-            not_found(command)
+            println!("{}: command not found", command.trim())
         }
     }
 }
 
-fn get_type(command: String) {
-    let t = command.replacen("type ", "", 1);
-    if t.starts_with("type") || t.starts_with("echo") || t.starts_with("exit") {
-        println!("{} is a shell builtin", t.trim());
-    } else if let Some(path) = is_command_in_path(&command) {
-        println!("{} is {}", command, path)
+pub fn execute_type(command: &str) {
+    let cmd = command.split_whitespace().nth(1).unwrap_or("");
+    if BUILTINS.contains(&cmd) {
+        println!("{} is a shell builtin", cmd);
+    } else if let Some(path) = is_command_in_path(cmd) {
+        println!("{} is {}", cmd, path);
+    } else {
+        println!("{}: not found", cmd.trim());
     }
 }
 
@@ -47,8 +51,4 @@ fn is_command_in_path(command: &str) -> Option<String> {
         }
     }
     None
-}
-
-fn not_found(command: String) {
-    println!("{}: command not found", command.trim());
 }
