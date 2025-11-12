@@ -1,8 +1,8 @@
-use std::env;
 use std::io::{self, Write};
 use std::os::unix::fs::PermissionsExt;
 use std::process::Command;
 use std::process::ExitCode;
+use std::{env, string};
 
 const BUILTINS: [&str; 3] = ["exit", "echo", "type"];
 
@@ -27,9 +27,32 @@ fn main() -> ExitCode {
 }
 
 pub fn execute(command: &str) {
-    let args = env::args();
-    let exe = is_command_in_path(command).unwrap()
-    Command::new(exe).args(args);
+    let exe = command.split_whitespace().nth(0).unwrap();
+
+    if let Some(_) = get_exe(&exe) {
+        let args = command.split_whitespace().filter(|x| !x.contains(exe));
+
+        let input = match Command::new(&exe).args(args).output() {
+            Ok(output) => output,
+            Err(e) => {
+                println!("{}: command not found", command.trim());
+                return;
+            }
+        };
+
+        let output = String::from_utf8_lossy(&input.stdout);
+        print!("{}", output);
+    }
+}
+
+fn get_exe(command: &str) -> Option<String> {
+    if let Ok(paths) = env::var("PATH") {
+        for dir in env::split_paths(&paths) {
+            let path = dir.join(command);
+            return Some(path.to_string_lossy().to_string());
+        }
+    }
+    None
 }
 
 pub fn execute_type(command: &str) {
