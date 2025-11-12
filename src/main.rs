@@ -1,10 +1,10 @@
-use std::env;
 use std::io::{self, Write};
 use std::os::unix::fs::PermissionsExt;
 use std::process::Command;
 use std::process::ExitCode;
+use std::{env, path};
 
-const BUILTINS: [&str; 4] = ["exit", "echo", "type", "pwd"];
+const BUILTINS: [&str; 5] = ["exit", "echo", "type", "pwd", "cd"];
 
 fn main() -> ExitCode {
     loop {
@@ -22,6 +22,7 @@ fn main() -> ExitCode {
             "echo" => print!("{}", str::replace(&command, "echo ", "")),
             "type" => execute_type(&command),
             "pwd" => pwd(),
+            "cd" => cd(&command),
             _ => execute(&command),
         };
     }
@@ -43,6 +44,25 @@ pub fn execute(command: &str) {
 
         let output = String::from_utf8_lossy(&input.stdout);
         print!("{}", output);
+    }
+}
+
+fn cd(command: &str) {
+    let curr_dir = env::current_dir().unwrap();
+    let path = path::Path::new(&curr_dir);
+    let dir = path::Path::new(path);
+    let next_dir = command.split_whitespace().nth(1).unwrap();
+
+    for dirs in dir {
+        println!("{}", next_dir);
+        if dirs.to_string_lossy() == next_dir.to_string() {
+            let new_dir_path = dir.join(next_dir);
+            if new_dir_path.is_dir() {
+                assert!(env::set_current_dir(&new_dir_path).is_ok());
+            }
+        } else {
+            println!("cd: {}: No such file or directory", next_dir)
+        }
     }
 }
 
