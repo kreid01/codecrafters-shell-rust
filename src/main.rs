@@ -1,6 +1,7 @@
 use std::env;
 use std::io::{self, Write};
 use std::os::unix::fs::PermissionsExt;
+use std::process::Command;
 use std::process::ExitCode;
 
 const BUILTINS: [&str; 3] = ["exit", "echo", "type"];
@@ -20,9 +21,15 @@ fn main() -> ExitCode {
         } else if command.starts_with("type") {
             execute_type(&command);
         } else {
-            println!("{}: command not found", command.trim())
+            execute(&command)
         }
     }
+}
+
+pub fn execute(command: &str) {
+    let args = env::args();
+    let exe = is_command_in_path(command).unwrap()
+    Command::new(exe).args(args);
 }
 
 pub fn execute_type(command: &str) {
