@@ -42,13 +42,8 @@ fn check_dirs(command: String) {
 
     for dir in dirs {
         for file in fs::read_dir(dir).unwrap() {
-            if file
-                .unwrap()
-                .file_name()
-                .into_string()
-                .expect("string")
-                .contains(&t)
-            {
+            println!("{}", file.unwrap().path().display());
+            if true {
                 println!("{} is {}", t, dir.to_string());
                 found = true;
             }
