@@ -1,5 +1,7 @@
 use std::env;
+use std::fs;
 use std::io::{self, Write};
+use std::path::Path;
 use std::process::ExitCode;
 
 fn main() -> ExitCode {
@@ -39,10 +41,17 @@ fn check_dirs(command: String) {
     let mut found = false;
 
     for dir in dirs {
-        println!("{} {}", t, dir.to_string());
-        if dir.to_string().contains(&t) {
-            println!("{} is {}", t, dir.to_string());
-            found = true;
+        for file in fs::read_dir(dir).unwrap() {
+            if file
+                .unwrap()
+                .file_name()
+                .into_string()
+                .expect("string")
+                .contains(&t)
+            {
+                println!("{} is {}", t, dir.to_string());
+                found = true;
+            }
         }
     }
 
