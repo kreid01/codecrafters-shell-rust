@@ -41,14 +41,19 @@ fn check_dirs(command: String) {
     let mut found = false;
 
     for dir in dirs {
-        if let Ok(files) = fs::read_dir(dir) {
-            for file in files.flatten() {
-                if file.file_name().into_string().expect("should be a string") == t {
-                    println!("{} is {}", t.trim(), dir.to_string());
+        let candidate = Path::new(dir).join(&t);
+
+        if candidate.is_file() {
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let meta = candidate.metadata().unwrap();
+                if meta.permissions().mode() & 0o111 != 0 {
+                    println!("{} is {}", t, candidate.display());
                     found = true;
+                    break;
                 }
             }
-        };
+        }
     }
 
     if !found {
