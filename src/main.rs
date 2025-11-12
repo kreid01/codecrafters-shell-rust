@@ -36,15 +36,18 @@ fn check_dirs(command: String) {
     let dirs: Vec<&str> = binding.split(":").collect();
 
     let t = command.replacen("type ", "", 1);
+    let mut found = false;
 
     for dir in dirs {
-        print(dir)
         if dir.to_string().contains(&t) {
-            println!("{} is {}", t, dir.to_string())
+            println!("{} is {}", t, dir.to_string());
+            found = true;
         }
     }
 
-    command_not_found(command)
+    if !found {
+        command_not_found(command)
+    }
 }
 
 fn not_found(command: String) {
