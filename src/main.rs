@@ -39,7 +39,7 @@ fn check_dirs(command: String) {
     let mut found = false;
 
     for dir in dirs {
-        println!("{} {}", t, dir.to_string())
+        println!("{} {}", t, dir.to_string());
         if dir.to_string().contains(&t) {
             println!("{} is {}", t, dir.to_string());
             found = true;
