@@ -27,33 +27,28 @@ fn get_type(command: String) {
     let t = command.replacen("type ", "", 1);
     if t.starts_with("type") || t.starts_with("echo") || t.starts_with("exit") {
         println!("{} is a shell builtin", t.trim());
-    } else {
-        check_dirs(&command)
+    } else if let Some(path) = is_command_in_path(&command) {
+        println!("{} is {}", command, path)
     }
 }
 
-fn check_dirs(command: &String) {
+fn is_command_in_path(command: &str) -> Option<String> {
     if let Ok(paths) = env::var("PATH") {
-        let t = command.replacen("type ", "", 1);
-
         for dir in env::split_paths(&paths) {
-            let file = dir.join(command);
-            if file.is_file() {
-                if let Ok(meta) = file.metadata() {
-                    println!("{}", file.to_string_lossy());
-                    if meta.permissions().mode() & 0o111 != 0 && file.to_string_lossy() == t {
-                        println!("{} is {}", t.trim(), dir.display());
+            let path = dir.join(command);
+            if path.is_file() {
+                if let Ok(metadata) = path.metadata() {
+                    let permissions = metadata.permissions();
+                    if permissions.mode() & 0o111 != 0 {
+                        return Some(path.to_string_lossy().to_string());
                     }
                 }
             }
         }
     }
+    None
 }
 
 fn not_found(command: String) {
     println!("{}: command not found", command.trim());
-}
-
-fn command_not_found(command: String) {
-    println!("{}: not found", command.trim());
 }
