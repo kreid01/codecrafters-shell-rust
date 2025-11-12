@@ -4,7 +4,7 @@ use std::os::unix::fs::PermissionsExt;
 use std::process::Command;
 use std::process::ExitCode;
 
-const BUILTINS: [&str; 3] = ["exit", "echo", "type"];
+const BUILTINS: [&str; 4] = ["exit", "echo", "type", "pwd"];
 
 fn main() -> ExitCode {
     loop {
@@ -14,13 +14,17 @@ fn main() -> ExitCode {
         let mut command = String::new();
         io::stdin().read_line(&mut command).unwrap();
 
-        let builtin = match command.split_whitespace().nth(0).unwrap() {
-            "exit" => ExitCode::from(0),
+        if command.split_whitespace().nth(0).unwrap() == "exit" {
+            return ExitCode::from(0);
+        }
+
+        match command.split_whitespace().nth(0).unwrap() {
             "echo" => print!("{}", str::replace(&command, "echo ", "")),
             "type" => execute_type(&command),
             "pwd" => pwd(),
-            _ => execute(command),
+            _ => execute(&command),
         };
+    }
 }
 
 pub fn execute(command: &str) {
@@ -43,8 +47,8 @@ pub fn execute(command: &str) {
 }
 
 fn pwd() {
-    let curr_dir = path::curr_dir()?;
-    println!("{}", curr_dir)
+    let curr_dir = env::current_dir().unwrap();
+    println!("{}", curr_dir.display())
 }
 
 fn get_exe(command: &str) -> Option<String> {
