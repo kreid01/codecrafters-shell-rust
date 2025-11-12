@@ -1,8 +1,8 @@
+use std::env;
 use std::io::{self, Write};
 use std::os::unix::fs::PermissionsExt;
 use std::process::Command;
 use std::process::ExitCode;
-use std::{env, string};
 
 const BUILTINS: [&str; 3] = ["exit", "echo", "type"];
 
@@ -14,16 +14,13 @@ fn main() -> ExitCode {
         let mut command = String::new();
         io::stdin().read_line(&mut command).unwrap();
 
-        if command.starts_with("exit") {
-            return ExitCode::from(0);
-        } else if command.starts_with("echo") {
-            print!("{}", str::replace(&command, "echo ", ""))
-        } else if command.starts_with("type") {
-            execute_type(&command);
-        } else {
-            execute(&command)
-        }
-    }
+        let builtin = match command.split_whitespace().nth(0).unwrap() {
+            "exit" => ExitCode::from(0),
+            "echo" => print!("{}", str::replace(&command, "echo ", "")),
+            "type" => execute_type(&command),
+            "pwd" => pwd(),
+            _ => execute(command),
+        };
 }
 
 pub fn execute(command: &str) {
@@ -34,7 +31,7 @@ pub fn execute(command: &str) {
 
         let input = match Command::new(&exe).args(args).output() {
             Ok(output) => output,
-            Err(e) => {
+            Err(_) => {
                 println!("{}: command not found", command.trim());
                 return;
             }
@@ -43,6 +40,11 @@ pub fn execute(command: &str) {
         let output = String::from_utf8_lossy(&input.stdout);
         print!("{}", output);
     }
+}
+
+fn pwd() {
+    let curr_dir = path::curr_dir()?;
+    println!("{}", curr_dir)
 }
 
 fn get_exe(command: &str) -> Option<String> {
