@@ -2,18 +2,20 @@ use std::env;
 use std::path::{Path, PathBuf};
 
 pub fn cd(command: &str) {
-    let Some(directory) = command.split_whitespace().nth(1) else {
-        eprintln!("cd: missing argument");
-        return;
-    };
+    let directory = command.split_whitespace().nth(1).unwrap();
 
     if directory.starts_with("./") {
-        cd_relative(directory);
+        cd_relative(command);
+        return;
     } else if directory.starts_with("../") {
-        cd_back(directory);
+        cd_back(command);
+        return;
     } else if directory.starts_with("~") {
         cd_home();
-    } else if cd_absolute(directory).is_none() {
+        return;
+    }
+
+    if cd_absolute(directory).is_none() {
         no_file_or_directory(directory);
     }
 }
