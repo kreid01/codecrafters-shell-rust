@@ -1,5 +1,6 @@
 use std::io::{self, Write};
 use std::os::unix::fs::PermissionsExt;
+use std::path::Path;
 use std::process::Command;
 use std::process::ExitCode;
 use std::{env, path};
@@ -52,6 +53,10 @@ fn cd(command: &str) {
 
     if next_dir.starts_with("./") {
         cd_relative(command);
+        return;
+    } else if next_dir.starts_with("../") {
+        cd_back(command);
+        return;
     }
 
     let path = path::Path::new(next_dir);
@@ -64,21 +69,44 @@ fn cd(command: &str) {
     println!("cd: {}: No such file or directory", next_dir)
 }
 
+fn cd_back(command: &str) {
+    let curr_dir = env::current_dir().unwrap();
+    let count = command.split("./").count();
+    let path = path::Path::new(&curr_dir)
+        .ancestors()
+        .take(count)
+        .last()
+        .unwrap();
+
+    if path.is_dir() {
+        assert!(env::set_current_dir(&path).is_ok());
+        return;
+    }
+
+    return;
+}
+
 fn cd_relative(command: &str) {
     let curr_dir = env::current_dir().unwrap();
     let path = path::Path::new(&curr_dir);
-    let next_dir = command.split_whitespace().nth(1).unwrap();
-    //.replace("./", "");
+    let next_dir = command.split_whitespace().nth(1).unwrap().replace("./", "");
+    let new_dir_path = path.join(next_dir);
 
-    for dirs in path {
-        if dirs.to_string_lossy() == next_dir.to_string() {
-            let new_dir_path = path.join(next_dir);
-            if new_dir_path.is_dir() {
-                assert!(env::set_current_dir(&new_dir_path).is_ok());
-                return;
-            }
-        }
+    if new_dir_path.is_dir() {
+        assert!(env::set_current_dir(&new_dir_path).is_ok());
+        return;
     }
+
+    // for dirs in path {
+    //     let replaced_dir = &mut next_dir.replace("./", "");
+    //     println!("{} and new {}", , replaced_dir.to_string());
+    //     if dirs.to_string_lossy() == replaced_dir.to_string() {
+    //         if new_dir_path.is_dir() {
+    //             assert!(env::set_current_dir(&new_dir_path).is_ok());
+    //             return;
+    //         }
+    //     }
+    // }
 
     println!(
         "cd: {}: No such file or directory",
