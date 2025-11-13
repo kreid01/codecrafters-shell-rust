@@ -48,23 +48,36 @@ pub fn execute(command: &str) {
 }
 
 fn cd(command: &str) {
-    let curr_dir = env::current_dir().unwrap();
-    let path = path::Path::new(&curr_dir);
-    let dir = path::Path::new(path);
     let next_dir = command.split_whitespace().nth(1).unwrap();
-
-    for dirs in dir {
-        println!("{}", next_dir);
-        if dirs.to_string_lossy() == next_dir.to_string() {
-            let new_dir_path = dir.join(next_dir);
-            if new_dir_path.is_dir() {
-                assert!(env::set_current_dir(&new_dir_path).is_ok());
-            }
-        } else {
-            println!("cd: {}: No such file or directory", next_dir)
-        }
+    let path = path::Path::new(next_dir);
+    let new_dir_path = path.join(next_dir);
+    if new_dir_path.is_dir() {
+        assert!(env::set_current_dir(&new_dir_path).is_ok());
+        return;
     }
+
+    println!("cd: {}: No such file or directory", next_dir)
 }
+
+// fn cd(command: &str) {
+//     let curr_dir = env::current_dir().unwrap();
+//     let path = path::Path::new(&curr_dir);
+//     let next_dir = command.split_whitespace().nth(1).unwrap();
+
+//     for dirs in path {
+//         println!("{} and {}", next_dir, dirs.to_string_lossy());
+//         if dirs.to_string_lossy() == next_dir.to_string() {
+//             let new_dir_path = path.join(next_dir);
+//             println!("{} matched", new_dir_path.display());
+//             if new_dir_path.is_dir() {
+//                 assert!(env::set_current_dir(&new_dir_path).is_ok());
+//                 return;
+//             }
+//         }
+//     }
+
+//     println!("cd: {}: No such file or directory", next_dir)
+// }
 
 fn pwd() {
     let curr_dir = env::current_dir().unwrap();
