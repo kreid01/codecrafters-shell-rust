@@ -21,13 +21,19 @@ fn main() -> ExitCode {
         }
 
         match command.split_whitespace().nth(0).unwrap() {
-            "echo" => print!("{}", str::replace(&command, "echo ", "")),
+            "echo" => echo(command),
             "type" => execute_type(&command),
             "pwd" => pwd(),
             "cd" => change_directory::cd(&command),
             _ => execute(&command),
         };
     }
+}
+
+pub fn echo(command: String) {
+    let split_by_quotes = command.replace("'", "");
+    println!("{}", split_by_quotes);
+    print!("{}", str::replace(&command, "echo ", ""))
 }
 
 pub fn execute(command: &str) {
