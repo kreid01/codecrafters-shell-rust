@@ -6,7 +6,7 @@ use std::process::ExitCode;
 
 mod change_directory;
 
-const BUILTINS: [&str; 5] = ["exit", "echo", "type", "pwd", "cd"];
+const BUILTINS: [&str; 6] = ["exit", "echo", "type", "pwd", "cd", "cat"];
 
 fn main() -> ExitCode {
     loop {
@@ -25,15 +25,53 @@ fn main() -> ExitCode {
             "type" => execute_type(&command),
             "pwd" => pwd(),
             "cd" => change_directory::cd(&command),
+            "cat" => cat(&command),
             _ => execute(&command),
         };
     }
 }
 
+pub fn cat(command: &str) {
+    let command_wo_echo = str::replace(&command, "cat ", "");
+    let mut return_commnd = command_wo_echo
+        .split("'")
+        .filter(|x| x.to_owned() != "".to_owned());
+    let mut final_command = String::new();
+
+    for x in return_commnd {
+        let input = match Command::new("cat").arg(x).output() {
+            Ok(output) => output,
+            Err(_) => {
+                println!("{}: command not found", command.trim());
+                return;
+            }
+        };
+
+        let output = String::from_utf8_lossy(&input.stdout);
+        final_command.push_str(" ");
+        final_command.push_str(&output);
+    }
+}
+
 pub fn echo(command: String) {
-    let split_by_quotes = command.replace("'", "");
-    println!("{}", split_by_quotes);
-    print!("{}", str::replace(&command, "echo ", ""))
+    let command_wo_echo = str::replace(&command, "echo ", "");
+    let mut return_commnd = command_wo_echo
+        .split("'")
+        .filter(|x| x.to_owned() != "".to_owned());
+
+    let mut final_command = String::new();
+    if return_commnd.clone().count() == 1 {
+        for x in return_commnd.nth(0).unwrap().split_whitespace() {
+            final_command.push_str(" ");
+            final_command.push_str(x.trim());
+        }
+    } else {
+        for x in return_commnd {
+            final_command.push_str(x);
+        }
+    }
+
+    println!("{}", &final_command.trim())
 }
 
 pub fn execute(command: &str) {
