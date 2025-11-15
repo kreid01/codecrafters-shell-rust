@@ -24,7 +24,11 @@ pub fn format_string_command(command: &str) -> String {
                     formatted_string.push(x);
                 }
             }
-            '\\' => {}
+            '\\' => {
+                if in_single_quotes {
+                    formatted_string.push('\\');
+                }
+            }
             c if c.is_whitespace() => {
                 if in_single_quotes || in_double_quotes {
                     formatted_string.push(c);
@@ -94,7 +98,7 @@ pub fn get_formatted_args(command: &str) -> Vec<String> {
                 }
             }
             '\\' => {
-                if last_char_is_escape(&unformatted_string) {
+                if last_char_is_escape(&unformatted_string) || in_single_quotes {
                     formatted_string.push('\\');
                 }
             }
