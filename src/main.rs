@@ -6,7 +6,7 @@ use std::process::ExitCode;
 
 mod change_directory;
 
-const BUILTINS: [&str; 6] = ["exit", "echo", "type", "pwd", "cd", "cat"];
+const BUILTINS: [&str; 5] = ["exit", "echo", "type", "pwd", "cd"];
 
 fn main() -> ExitCode {
     loop {
@@ -32,46 +32,45 @@ fn main() -> ExitCode {
 }
 
 pub fn cat(command: &str) {
-    let command_wo_echo = str::replace(&command, "cat ", "");
-    let mut return_commnd = command_wo_echo
+    let command_wo_cat = str::replace(&command, "cat ", "");
+    let formatted_command = command_wo_cat
         .split("'")
-        .filter(|x| x.to_owned() != "".to_owned());
-    let mut final_command = String::new();
+        .filter(|x| x.to_owned() != " ".to_owned());
 
-    for x in return_commnd {
-        let input = match Command::new("cat").arg(x).output() {
-            Ok(output) => output,
-            Err(_) => {
-                println!("{}: command not found", command.trim());
-                return;
-            }
-        };
+    let input = match Command::new("cat").args(formatted_command).output() {
+        Ok(output) => output,
+        Err(_) => {
+            println!("{}: command not found", command.trim());
+            return;
+        }
+    };
 
-        let output = String::from_utf8_lossy(&input.stdout);
-        final_command.push_str(" ");
-        final_command.push_str(&output);
-    }
+    let output = String::from_utf8_lossy(&input.stdout);
+    println!("{}", output.trim());
 }
 
 pub fn echo(command: String) {
     let command_wo_echo = str::replace(&command, "echo ", "");
-    let mut return_commnd = command_wo_echo
-        .split("'")
-        .filter(|x| x.to_owned() != "".to_owned());
+    let formatted_command = format_string_command(&command_wo_echo);
+    println!("{}", &formatted_command.trim())
+}
 
-    let mut final_command = String::new();
-    if return_commnd.clone().count() == 1 {
-        for x in return_commnd.nth(0).unwrap().split_whitespace() {
-            final_command.push_str(" ");
-            final_command.push_str(x.trim());
+pub fn format_string_command(command: &str) -> String {
+    let mut split_command = command.split("'").filter(|x| x.to_owned() != "".to_owned());
+
+    let mut formatted_string = String::new();
+    if split_command.clone().count() == 1 {
+        for x in split_command.nth(0).unwrap().split_whitespace() {
+            formatted_string.push_str(" ");
+            formatted_string.push_str(x.trim());
         }
     } else {
-        for x in return_commnd {
-            final_command.push_str(x);
+        for x in split_command {
+            formatted_string.push_str(x);
         }
     }
 
-    println!("{}", &final_command.trim())
+    return formatted_string;
 }
 
 pub fn execute(command: &str) {
