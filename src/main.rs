@@ -45,7 +45,7 @@ pub fn cat(command: &str) {
     };
 
     println!("{}", String::from_utf8_lossy(&input.stdout).trim_end());
-
+}
 
 pub fn echo(command: String) {
     let command_wo_echo = str::replace(&command, "echo ", "");
