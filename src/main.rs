@@ -36,7 +36,7 @@ pub fn cat(command: &str) {
     let command_wo_cat = str::replace(&command, "cat ", "");
     let args = string_formatter::get_formatted_args(&command_wo_cat);
 
-    let input = match Command::new("cat").args(args).output() {
+    let input = match Command::new("cat").args(&args.clone()).output() {
         Ok(output) => output,
         Err(_) => {
             println!("{}: command not found", command.trim());
@@ -44,9 +44,8 @@ pub fn cat(command: &str) {
         }
     };
 
-    let output = String::from_utf8_lossy(&input.stdout);
-    println!("{}", output.trim());
-}
+    println!("{}", String::from_utf8_lossy(&input.stdout).trim_end());
+
 
 pub fn echo(command: String) {
     let command_wo_echo = str::replace(&command, "echo ", "");
