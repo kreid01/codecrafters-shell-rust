@@ -63,60 +63,53 @@ fn last_char_is_escape(str: &String) -> bool {
 }
 
 pub fn get_formatted_args(command: &str) -> Vec<String> {
-    let mut in_single_quotes = false;
-    let mut in_double_quotes = false;
+    let mut args = Vec::new();
+    let mut current = String::new();
+    let mut in_single = false;
+    let mut in_double = false;
+    let mut chars = command.chars().peekable();
 
-    let mut args: Vec<String> = Vec::new();
-    let mut formatted_string = String::new();
-    let mut unformatted_string = String::new();
-
-    for x in command.chars() {
-        let escaped = last_char_is_escape(&unformatted_string);
-        let literal = last_char_is_escape(&formatted_string);
-
-        match x {
-            '\'' => {
-                if !in_double_quotes && !escaped {
-                    in_single_quotes = !in_single_quotes;
-                } else {
-                    formatted_string.push(x);
-                }
+    while let Some(c) = chars.next() {
+        match c {
+            '\'' if !in_double => {
+                in_single = !in_single;
             }
-            '"' => {
-                if !in_single_quotes {
-                    let truly_escaped = escaped && !literal;
-                    if truly_escaped {
-                        formatted_string.push(x);
-                    } else {
-                        in_double_quotes = !in_double_quotes;
-                    }
-                } else {
-                    formatted_string.push(x);
-                }
+            '"' if !in_single => {
+                in_double = !in_double;
             }
             '\\' => {
-                if escaped || in_single_quotes {
-                    formatted_string.push('\\');
+                if in_double {
+                    if let Some(&next) = chars.peek() {
+                        match next {
+                            '"' | '\\' => {
+                                current.push(next);
+                                chars.next();
+                            }
+                            _ => {
+                                current.push('\\');
+                            }
+                        }
+                    } else {
+                        current.push('\\');
+                    }
+                } else {
+                    if let Some(next) = chars.next() {
+                        current.push(next);
+                    }
                 }
             }
-            c if c.is_whitespace() => {
-                if in_single_quotes || in_double_quotes {
-                    formatted_string.push(c);
-                } else if !formatted_string.is_empty() {
-                    args.push(formatted_string.clone());
-                    formatted_string.clear();
+            c if c.is_whitespace() && !in_single && !in_double => {
+                if !current.is_empty() {
+                    args.push(current.clone());
+                    current.clear();
                 }
             }
-            _ => {
-                formatted_string.push(x);
-            }
+            _ => current.push(c),
         }
-
-        unformatted_string.push(x);
     }
 
-    if !formatted_string.is_empty() {
-        args.push(formatted_string);
+    if !current.is_empty() {
+        args.push(current);
     }
 
     args

@@ -44,7 +44,7 @@ pub fn cat(command: &str) {
         }
     };
 
-    println!("{}", String::from_utf8_lossy(&input.stdout).trim_end());
+    io::stdout().write_all(&input.stdout).unwrap();
 }
 
 pub fn echo(command: String) {
