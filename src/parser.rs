@@ -114,3 +114,28 @@ pub fn get_formatted_args(command: &str) -> Vec<String> {
 
     args
 }
+
+pub fn parse_execute_command(command: &str) -> (String, Vec<&str>) {
+    if command.starts_with('\'') || command.starts_with("\"") {
+        let command = command.trim();
+        let commands_split: Vec<&str> = command.split_whitespace().collect();
+        let file = commands_split.iter().rev().nth(0).unwrap();
+
+        let exe = format_string_command(&command)
+            .replace(file, "")
+            .replace("'", "\\'");
+
+        let mut args: Vec<&str> = Vec::new();
+        args.push(file);
+
+        return (exe, args);
+    } else {
+        let exe = command.split_whitespace().nth(0).unwrap();
+        let args: Vec<&str> = command
+            .split_whitespace()
+            .filter(|x| !x.contains(exe))
+            .into_iter()
+            .collect();
+        return (exe.to_string(), args);
+    }
+}

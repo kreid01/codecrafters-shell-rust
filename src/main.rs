@@ -5,7 +5,7 @@ use std::process::Command;
 use std::process::ExitCode;
 
 mod change_directory;
-mod string_formatter;
+mod parser;
 
 const BUILTINS: [&str; 5] = ["exit", "echo", "type", "pwd", "cd"];
 
@@ -34,7 +34,7 @@ fn main() -> ExitCode {
 
 pub fn cat(command: &str) {
     let command_wo_cat = str::replace(&command, "cat ", "");
-    let args = string_formatter::get_formatted_args(&command_wo_cat);
+    let args = parser::get_formatted_args(&command_wo_cat);
 
     let input = match Command::new("cat").args(&args.clone()).output() {
         Ok(output) => output,
@@ -49,37 +49,12 @@ pub fn cat(command: &str) {
 
 pub fn echo(command: String) {
     let command_wo_echo = str::replace(&command, "echo ", "");
-    let formatted_command = string_formatter::format_string_command(&command_wo_echo);
+    let formatted_command = parser::format_string_command(&command_wo_echo);
     println!("{}", &formatted_command.trim())
 }
 
-pub fn parse_execute_command(command: &str) -> (String, Vec<&str>) {
-    if command.starts_with('\'') || command.starts_with("\"") {
-        let command = command.trim();
-        let commands_split: Vec<&str> = command.split_whitespace().collect();
-        let file = commands_split.iter().rev().nth(0).unwrap();
-
-        let exe = string_formatter::format_string_command(&command)
-            .replace(file, "")
-            .replace("'", "\\'");
-
-        let mut args: Vec<&str> = Vec::new();
-        args.push(file);
-
-        return (exe, args);
-    } else {
-        let exe = command.split_whitespace().nth(0).unwrap();
-        let args: Vec<&str> = command
-            .split_whitespace()
-            .filter(|x| !x.contains(exe))
-            .into_iter()
-            .collect();
-        return (exe.to_string(), args);
-    }
-}
-
 pub fn execute(command: &str) {
-    let (exe, args) = parse_execute_command(command);
+    let (exe, args) = parser::parse_execute_command(command);
 
     let input = match Command::new(exe.trim()).args(args).output() {
         Ok(output) => output,
