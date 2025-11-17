@@ -44,7 +44,7 @@ pub fn cat(command: &str) {
         }
     };
 
-    io::stdout().write_all(&input.stdout).unwrap();
+    println!("{}", String::from_utf8_lossy(&input.stdout).trim_end());
 }
 
 pub fn echo(command: String) {
@@ -53,38 +53,49 @@ pub fn echo(command: String) {
     println!("{}", &formatted_command.trim())
 }
 
-pub fn execute(command: &str) {
-    let exe = command.split_whitespace().nth(0).unwrap();
+pub fn parse_execute_command(command: &str) -> (String, Vec<&str>) {
+    if command.starts_with('\'') || command.starts_with("\"") {
+        let command = command.trim();
+        let commands_split: Vec<&str> = command.split_whitespace().collect();
+        let file = commands_split.iter().rev().nth(0).unwrap();
 
-    if let Some(_) = get_exe(&exe) {
-        let args = command.split_whitespace().filter(|x| !x.contains(exe));
+        let exe = string_formatter::format_string_command(&command)
+            .replace(file, "")
+            .replace("'", "\\'");
 
-        let input = match Command::new(&exe).args(args).output() {
-            Ok(output) => output,
-            Err(_) => {
-                println!("{}: command not found", command.trim());
-                return;
-            }
-        };
+        let mut args: Vec<&str> = Vec::new();
+        args.push(file);
 
-        let output = String::from_utf8_lossy(&input.stdout);
-        print!("{}", output);
+        return (exe, args);
+    } else {
+        let exe = command.split_whitespace().nth(0).unwrap();
+        let args: Vec<&str> = command
+            .split_whitespace()
+            .filter(|x| !x.contains(exe))
+            .into_iter()
+            .collect();
+        return (exe.to_string(), args);
     }
+}
+
+pub fn execute(command: &str) {
+    let (exe, args) = parse_execute_command(command);
+
+    let input = match Command::new(exe.trim()).args(args).output() {
+        Ok(output) => output,
+        Err(_) => {
+            println!("{}: command not found", command.trim());
+            return;
+        }
+    };
+
+    let output = String::from_utf8_lossy(&input.stdout);
+    print!("{}", output);
 }
 
 fn pwd() {
     let curr_dir = env::current_dir().unwrap();
     println!("{}", curr_dir.display())
-}
-
-fn get_exe(command: &str) -> Option<String> {
-    if let Ok(paths) = env::var("PATH") {
-        for dir in env::split_paths(&paths) {
-            let path = dir.join(command);
-            return Some(path.to_string_lossy().to_string());
-        }
-    }
-    None
 }
 
 pub fn execute_type(command: &str) {
@@ -102,6 +113,7 @@ fn is_command_in_path(command: &str) -> Option<String> {
     if let Ok(paths) = env::var("PATH") {
         for dir in env::split_paths(&paths) {
             let path = dir.join(command);
+
             if path.is_file() {
                 if let Ok(metadata) = path.metadata() {
                     let permissions = metadata.permissions();
@@ -112,5 +124,6 @@ fn is_command_in_path(command: &str) -> Option<String> {
             }
         }
     }
+
     None
 }
