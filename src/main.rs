@@ -1,11 +1,11 @@
 use std::env::{self};
 use std::io::{self, Write};
 use std::os::unix::fs::PermissionsExt;
-use std::path;
 use std::process::ExitCode;
 
 mod cat;
 mod change_directory;
+mod echo;
 mod executor;
 mod ls;
 mod parser;
@@ -27,7 +27,7 @@ fn main() -> ExitCode {
         }
 
         match command.split_whitespace().nth(0).unwrap() {
-            "echo" => echo(command),
+            "echo" => echo::echo(command),
             "type" => execute_type(&command),
             "pwd" => pwd(),
             "cd" => change_directory::cd(&command),
@@ -35,23 +35,6 @@ fn main() -> ExitCode {
             "ls" => ls::ls(command),
             _ => executor::execute(&command),
         };
-    }
-}
-
-pub fn echo(command: String) {
-    let command_wo_echo = str::replace(&command, "echo ", "");
-    let command_split: Vec<&str> = command_wo_echo.split("1>").collect();
-    let formatted_command = parser::format_string_command(&command_wo_echo);
-
-    if command_split.len() > 1 {
-        let mut contents = Vec::new();
-        let input_path = command_split[0];
-        let formatted_command = parser::format_string_command(&input_path).trim().to_owned();
-        let output_path = path::Path::new(command_split[1].trim());
-        contents.push(formatted_command);
-        let _ = writer::write(output_path.to_path_buf(), contents);
-    } else {
-        println!("{}", &formatted_command.trim())
     }
 }
 

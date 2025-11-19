@@ -13,3 +13,7 @@ pub fn write(file_name: PathBuf, contents: Vec<String>) -> io::Result<()> {
     }
     Ok(())
 }
+
+pub fn make_dir(file_name: PathBuf) {
+    let _ = File::create(file_name);
+}
