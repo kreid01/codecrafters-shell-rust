@@ -30,5 +30,5 @@ pub fn append(file_name: PathBuf, contents: Vec<String>) -> io::Result<()> {
 }
 
 pub fn make_dir(file_name: PathBuf) {
-    let _ = File::create(file_name);
+    let _ = OpenOptions::new().append(true).create(true).open(file_name);
 }

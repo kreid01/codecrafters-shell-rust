@@ -33,10 +33,10 @@ pub fn execute_ls(output_path: &PathBuf, command: &String, args: Vec<String>, ex
             match executor {
                 Action::AppendStdout => {
                     let _ = writer::append(output_path.to_path_buf(), lines);
+                    make_dir(output_path.to_owned())
                 }
                 Action::AppendStderr => {
                     printer::print_lines(lines);
-                    make_dir(output_path.to_owned())
                 }
                 Action::RedirectStderr => {
                     printer::print_lines(lines);
