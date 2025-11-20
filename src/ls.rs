@@ -1,9 +1,12 @@
 use std::{
     fs::{self},
-    path::{self, PathBuf},
+    path::PathBuf,
 };
 
-use crate::{change_directory, redirect, writer};
+use crate::{
+    executor::{execute_with_redirect, Redirect},
+    redirect, writer,
+};
 
 const LS_ARGS: [&str; 1] = ["-1"];
 
@@ -13,77 +16,61 @@ pub struct LsArgs {
 
 pub fn ls(command: String) {
     let command_wo_ls = command.replace("ls ", "");
-
-    match command {
-        _redirect_error if command.contains("1>") => {
-            redirect::redirect_stdout(&command_wo_ls, write_ls);
-        }
-        _redirect_output if command.contains("2>") => {
-            redirect::redirect_stderr(&command_wo_ls, write_ls);
-        }
-        _ => {
-            let current_dir = change_directory::get_curr_directory();
-            for x in current_dir.iter() {
-                println!("{}", x.display());
-            }
-        }
-    }
+    execute_with_redirect(&command_wo_ls, write_ls, default_ls);
 }
 
-pub fn check_ls_args(args: Vec<String>) -> (LsArgs, Vec<String>) {
+pub fn default_ls(command: &str) -> Option<()> {
+    if fs::read_dir(command).is_err() {
+        return None;
+    }
+
+    let lines = get_ls(command);
+    for line in lines {
+        print!("{}", line)
+    }
+
+    return Some(());
+}
+
+pub fn check_ls_args(args: Vec<String>) -> LsArgs {
     let ls_args = LsArgs {
         sort: args.contains(&"-1".to_string()),
     };
 
-    let remaining_args: Vec<String> = args
-        .iter()
-        .filter(|x| !LS_ARGS.contains(&x.as_str()))
-        .cloned()
-        .collect();
-
-    (ls_args, remaining_args)
+    return ls_args;
 }
 
-pub fn write_ls(output_path: PathBuf, args: Vec<String>) {
+pub fn get_ls(command: &str) -> Vec<String> {
     let mut lines: Vec<String> = Vec::new();
-    let (ls_args, checked_args) = check_ls_args(args);
 
-    for arg in checked_args {
-        if let Some(error) = Some(check_dir_not_found("ls".to_string(), &arg, true)) {
-            lines.push(error.unwrap());
-            continue;
+    match fs::read_dir(command) {
+        Ok(entries) => {
+            for entry in entries {
+                let entry = entry.unwrap();
+                let file_name = entry.file_name().to_string_lossy().to_string();
+                lines.push(file_name);
+            }
         }
-
-        let entries = fs::read_dir(arg).expect("Cannot read directory");
-
-        for entry in entries {
-            let entry = entry.unwrap();
-            let file_name = entry.file_name().to_string_lossy().to_string();
-            lines.push(file_name);
+        Err(_) => {
+            let error = format!("ls: {}: No such file or directory", command);
+            lines.push(error);
         }
     }
+
+    return lines;
+}
+
+pub fn write_ls(output_path: &PathBuf, command: &String, args: Vec<String>, redirect: Redirect) {
+    let ls_args = check_ls_args(args);
+    let mut lines = get_ls(command);
 
     if ls_args.sort {
         lines.sort();
     }
 
-    let _ = writer::write(output_path.to_path_buf(), lines);
-}
-
-fn check_path(path: &str) -> bool {
-    return !path::Path::new(path).is_dir();
-}
-
-fn check_dir_not_found(command: String, path: &str, redirect: bool) -> Option<String> {
-    if check_path(&path) {
-        let result = format!("{}: {}: No such file or directory", command, path);
-        if redirect {
-            return Some(result);
-        }
-
-        println!("{}", result);
-        return None;
+    match redirect {
+        Redirect::Stdout => {}
+        Redirect::Stderr => {}
     }
-
-    return None;
+    let _ = writer::write(output_path.to_path_buf(), lines);
 }
