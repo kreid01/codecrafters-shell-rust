@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
 use std::io::{self, LineWriter};
 use std::path::PathBuf;
@@ -11,6 +11,21 @@ pub fn write(file_name: PathBuf, contents: Vec<String>) -> io::Result<()> {
         let buff = format!("{}\n", x);
         file.write_all(buff.as_bytes())?;
     }
+    Ok(())
+}
+
+pub fn append(file_name: PathBuf, contents: Vec<String>) -> io::Result<()> {
+    let file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open(file_name)?;
+
+    let mut writer = LineWriter::new(file);
+
+    for line in contents {
+        writeln!(writer, "{}", line)?;
+    }
+
     Ok(())
 }
 

@@ -10,7 +10,7 @@ mod executor;
 mod ls;
 mod parser;
 mod redirect;
-mod writer;
+mod utils;
 
 const BUILTINS: [&str; 5] = ["exit", "echo", "type", "pwd", "cd"];
 

@@ -3,12 +3,7 @@ use std::{
     path::PathBuf,
 };
 
-use crate::{
-    executor::{execute_with_redirect, Redirect},
-    redirect, writer,
-};
-
-const LS_ARGS: [&str; 1] = ["-1"];
+use crate::{executor::execute_with_redirect, redirect::Action, utils::writer};
 
 pub struct LsArgs {
     sort: bool,
@@ -16,31 +11,28 @@ pub struct LsArgs {
 
 pub fn ls(command: String) {
     let command_wo_ls = command.replace("ls ", "");
-    execute_with_redirect(&command_wo_ls, write_ls, default_ls);
+    execute_with_redirect(&command_wo_ls, execute_ls, default_ls);
 }
 
-pub fn default_ls(command: &str) -> Option<()> {
-    if fs::read_dir(command).is_err() {
-        return None;
+pub fn execute_ls(output_path: &PathBuf, command: &String, args: Vec<String>, executor: &Action) {
+    let ls_args = check_ls_args(args);
+    let mut lines = get_ls_results(command);
+
+    if ls_args.sort {
+        lines.sort();
     }
 
-    let lines = get_ls(command);
-    for line in lines {
-        print!("{}", line)
+    match executor {
+        Action::Append => {
+            let _ = writer::append(output_path.to_path_buf(), lines);
+        }
+        _ => {
+            let _ = writer::write(output_path.to_path_buf(), lines);
+        }
     }
-
-    return Some(());
 }
 
-pub fn check_ls_args(args: Vec<String>) -> LsArgs {
-    let ls_args = LsArgs {
-        sort: args.contains(&"-1".to_string()),
-    };
-
-    return ls_args;
-}
-
-pub fn get_ls(command: &str) -> Vec<String> {
+pub fn get_ls_results(command: &str) -> Vec<String> {
     let mut lines: Vec<String> = Vec::new();
 
     match fs::read_dir(command) {
@@ -60,17 +52,21 @@ pub fn get_ls(command: &str) -> Vec<String> {
     return lines;
 }
 
-pub fn write_ls(output_path: &PathBuf, command: &String, args: Vec<String>, redirect: Redirect) {
-    let ls_args = check_ls_args(args);
-    let mut lines = get_ls(command);
-
-    if ls_args.sort {
-        lines.sort();
+pub fn default_ls(command: &str) {
+    if fs::read_dir(command).is_err() {
+        println!("ls: {}: No such file or directory", command)
     }
 
-    match redirect {
-        Redirect::Stdout => {}
-        Redirect::Stderr => {}
+    let lines = get_ls_results(command);
+    for line in lines {
+        print!("{}", line)
     }
-    let _ = writer::write(output_path.to_path_buf(), lines);
+}
+
+pub fn check_ls_args(args: Vec<String>) -> LsArgs {
+    let ls_args = LsArgs {
+        sort: args.contains(&"-1".to_string()),
+    };
+
+    return ls_args;
 }
