@@ -1,7 +1,7 @@
 use regex::Regex;
 use std::path::PathBuf;
 
-use crate::{enums::Action, executor::execute_commands_with_args};
+use crate::{enums::actions::Action, executor::execute_commands_with_args};
 
 pub fn redirect_stderr<F>(command: &str, executor: F)
 where

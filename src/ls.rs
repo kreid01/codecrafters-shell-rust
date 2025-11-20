@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{
-    enums::Action,
+    enums::actions::Action,
     executor::execute_with_redirect,
     utils::{
         printer,

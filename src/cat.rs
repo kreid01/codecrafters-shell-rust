@@ -1,10 +1,12 @@
 use std::{fs, path::PathBuf};
 
 use crate::{
-    enums::Action,
+    enums::actions::Action,
     executor::execute_with_redirect,
-    parser,
-    utils::writer::{self, make_dir},
+    utils::{
+        parser,
+        writer::{self, make_dir},
+    },
 };
 
 pub fn cat(command: &str) {

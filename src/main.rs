@@ -3,14 +3,13 @@ use std::io::{self, Write};
 use std::os::unix::fs::PermissionsExt;
 use std::process::ExitCode;
 
+mod actions;
 mod cat;
-mod change_directory;
+mod cd;
 mod echo;
 mod enums;
 mod executor;
 mod ls;
-mod parser;
-mod redirect;
 mod utils;
 
 const BUILTINS: [&str; 5] = ["exit", "echo", "type", "pwd", "cd"];
@@ -31,7 +30,7 @@ fn main() -> ExitCode {
             "echo" => echo::echo(command),
             "type" => execute_type(&command),
             "pwd" => pwd(),
-            "cd" => change_directory::cd(&command),
+            "cd" => cd::cd(&command),
             "cat" => cat::cat(&command),
             "ls" => ls::ls(command),
             _ => executor::execute(&command),

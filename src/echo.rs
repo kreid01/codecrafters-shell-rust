@@ -1,11 +1,10 @@
 use std::path;
 
 use crate::{
-    enums::Action,
+    enums::actions::Action,
     executor::execute_with_redirect,
-    parser,
     utils::{
-        printer,
+        parser, printer,
         writer::{self, make_dir},
     },
 };
