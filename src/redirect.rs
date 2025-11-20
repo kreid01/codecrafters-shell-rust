@@ -1,20 +1,14 @@
 use regex::Regex;
 use std::path::PathBuf;
 
-use crate::executor::execute_commands_with_args;
-
-pub enum Action {
-    Stderr,
-    Stdout,
-    Append,
-}
+use crate::{enums::Action, executor::execute_commands_with_args};
 
 pub fn redirect_stderr<F>(command: &str, executor: F)
 where
     F: Fn(&PathBuf, &String, Vec<String>, &Action),
 {
     let commands: Vec<&str> = command.split("2>").collect();
-    execute_commands_with_args(commands, executor, Action::Stderr);
+    execute_commands_with_args(commands, executor, Action::RedirectStderr);
 }
 
 pub fn redirect_stdout<F>(command: &str, executor: F)
@@ -23,5 +17,5 @@ where
 {
     let re = Regex::new(r"1>|>").unwrap();
     let commands: Vec<&str> = re.split(command).collect();
-    execute_commands_with_args(commands, executor, Action::Stdout);
+    execute_commands_with_args(commands, executor, Action::RedirectStdout);
 }

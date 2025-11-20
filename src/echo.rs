@@ -1,10 +1,13 @@
 use std::path;
 
 use crate::{
+    enums::Action,
     executor::execute_with_redirect,
     parser,
-    redirect::Action,
-    utils::writer::{self, make_dir},
+    utils::{
+        printer,
+        writer::{self, make_dir},
+    },
 };
 
 pub fn echo(command: String) {
@@ -22,20 +25,24 @@ pub fn write_echo(
     lines.push(command.to_owned());
 
     match action {
-        Action::Stdout => {
+        Action::RedirectStdout => {
             let _ = writer::write(output_path.to_owned(), lines);
         }
-        Action::Stderr => {
-            for line in lines {
-                println!("{}", line);
-            }
-
-            make_dir(output_path.to_owned());
+        Action::RedirectStderr => {
+            echo_stderr(output_path, lines);
         }
-        Action::Append => {
+        Action::AppendStdout => {
             let _ = writer::append(output_path.to_owned(), lines);
         }
+        Action::AppendStderr => {
+            echo_stderr(output_path, lines);
+        }
     }
+}
+
+pub fn echo_stderr(output_path: &path::PathBuf, lines: Vec<String>) {
+    printer::print_lines(lines);
+    make_dir(output_path.to_owned());
 }
 
 pub fn default_echo(command: &str) {

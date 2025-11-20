@@ -6,6 +6,7 @@ use std::process::ExitCode;
 mod cat;
 mod change_directory;
 mod echo;
+mod enums;
 mod executor;
 mod ls;
 mod parser;

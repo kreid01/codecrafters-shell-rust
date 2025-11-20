@@ -1,6 +1,11 @@
 use std::{fs, path::PathBuf};
 
-use crate::{executor::execute_with_redirect, parser, redirect::Action, utils::writer};
+use crate::{
+    enums::Action,
+    executor::execute_with_redirect,
+    parser,
+    utils::writer::{self, make_dir},
+};
 
 pub fn cat(command: &str) {
     let command_wo_cat = str::replace(&command, "cat ", "");
@@ -12,24 +17,34 @@ pub fn execute_cat(output_path: &PathBuf, command: &String, _args: Vec<String>, 
 
     match get_cat_result(command) {
         Ok(content) => match action {
-            Action::Stdout => {
+            Action::RedirectStdout => {
                 let _ = writer::write(output_path.to_owned(), vec![content]);
             }
-            Action::Stderr => {
+            Action::RedirectStderr => {
                 println!("{}", content);
+                make_dir(output_path.to_owned())
             }
-            Action::Append => {
+            Action::AppendStdout => {
                 let _ = writer::append(output_path.to_owned(), vec![content]);
+            }
+            Action::AppendStderr => {
+                println!("{}", content);
+                make_dir(output_path.to_owned())
             }
         },
         Err(_) => match action {
-            Action::Stdout => {
-                println!("{}", err)
+            Action::RedirectStdout => {
+                println!("{}", err);
+                make_dir(output_path.to_owned())
             }
-            Action::Stderr => {
+            Action::RedirectStderr => {
                 let _ = writer::write(output_path.to_owned(), vec![err]);
             }
-            Action::Append => {
+            Action::AppendStdout => {
+                println!("{}", err);
+                make_dir(output_path.to_owned())
+            }
+            Action::AppendStderr => {
                 let _ = writer::append(output_path.to_owned(), vec![err]);
             }
         },

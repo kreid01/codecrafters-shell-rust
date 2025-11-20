@@ -3,7 +3,14 @@ use std::{
     path::PathBuf,
 };
 
-use crate::{executor::execute_with_redirect, redirect::Action, utils::writer};
+use crate::{
+    enums::Action,
+    executor::execute_with_redirect,
+    utils::{
+        printer,
+        writer::{self, make_dir},
+    },
+};
 
 pub struct LsArgs {
     sort: bool,
@@ -16,23 +23,50 @@ pub fn ls(command: String) {
 
 pub fn execute_ls(output_path: &PathBuf, command: &String, args: Vec<String>, executor: &Action) {
     let ls_args = check_ls_args(args);
-    let mut lines = get_ls_results(command);
 
-    if ls_args.sort {
-        lines.sort();
-    }
+    match get_ls_results(command) {
+        Ok(mut lines) => {
+            if ls_args.sort {
+                lines.sort();
+            }
 
-    match executor {
-        Action::Append => {
-            let _ = writer::append(output_path.to_path_buf(), lines);
+            match executor {
+                Action::AppendStdout => {
+                    let _ = writer::append(output_path.to_path_buf(), lines);
+                }
+                Action::AppendStderr => {
+                    printer::print_lines(lines);
+                    make_dir(output_path.to_owned())
+                }
+                Action::RedirectStderr => {
+                    printer::print_lines(lines);
+                    make_dir(output_path.to_owned())
+                }
+                Action::RedirectStdout => {
+                    let _ = writer::write(output_path.to_path_buf(), lines);
+                }
+            }
         }
-        _ => {
-            let _ = writer::write(output_path.to_path_buf(), lines);
-        }
+        Err(err) => match executor {
+            Action::AppendStdout => {
+                println!("{}", err);
+                make_dir(output_path.to_owned())
+            }
+            Action::AppendStderr => {
+                let _ = writer::append(output_path.to_path_buf(), vec![err]);
+            }
+            Action::RedirectStdout => {
+                println!("{}", err);
+                make_dir(output_path.to_owned())
+            }
+            Action::RedirectStderr => {
+                let _ = writer::write(output_path.to_path_buf(), vec![err]);
+            }
+        },
     }
 }
 
-pub fn get_ls_results(command: &str) -> Vec<String> {
+pub fn get_ls_results(command: &str) -> Result<Vec<String>, String> {
     let mut lines: Vec<String> = Vec::new();
 
     match fs::read_dir(command) {
@@ -42,24 +76,25 @@ pub fn get_ls_results(command: &str) -> Vec<String> {
                 let file_name = entry.file_name().to_string_lossy().to_string();
                 lines.push(file_name);
             }
+            return Ok(lines);
         }
         Err(_) => {
-            let error = format!("ls: {}: No such file or directory", command);
-            lines.push(error);
+            let err = format!("ls: {}: No such file or directory", command);
+            return Err(err);
         }
     }
-
-    return lines;
 }
 
 pub fn default_ls(command: &str) {
-    if fs::read_dir(command).is_err() {
-        println!("ls: {}: No such file or directory", command)
-    }
-
-    let lines = get_ls_results(command);
-    for line in lines {
-        print!("{}", line)
+    match get_ls_results(command) {
+        Ok(lines) => {
+            for line in lines {
+                println!("{}", line)
+            }
+        }
+        Err(err) => {
+            println!("{}", err)
+        }
     }
 }
 

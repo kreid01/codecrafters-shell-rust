@@ -1,5 +1,4 @@
 use std::{
-    default,
     path::{self, PathBuf},
     process::Command,
 };
@@ -7,8 +6,9 @@ use std::{
 use regex::Regex;
 
 use crate::{
+    enums::Action,
     parser,
-    redirect::{self, Action},
+    redirect::{self},
 };
 
 pub fn execute_with_redirect<R, D>(command: &str, executor: R, default: D)
@@ -17,8 +17,11 @@ where
     D: Fn(&str),
 {
     match command {
-        _append_output if command.contains("1>>") || command.contains(">>") => {
+        _append_output if command.contains("2>>") => {
             append_stderr(command, executor);
+        }
+        _append_error if command.contains("1>>") || command.contains(">>") => {
+            append_stdout(command, executor);
         }
         _redirect_error if command.contains("2>") => {
             redirect::redirect_stderr(&command, executor);
@@ -32,13 +35,21 @@ where
     }
 }
 
-pub fn append_stderr<R>(command: &str, executor: R)
+pub fn append_stdout<R>(command: &str, executor: R)
 where
     R: Fn(&PathBuf, &String, Vec<String>, &Action),
 {
     let re = Regex::new(r"1>>|>>").unwrap();
     let commands: Vec<&str> = re.split(command).collect();
-    execute_commands_with_args(commands, executor, Action::Append);
+    execute_commands_with_args(commands, executor, Action::AppendStdout);
+}
+
+pub fn append_stderr<R>(command: &str, executor: R)
+where
+    R: Fn(&PathBuf, &String, Vec<String>, &Action),
+{
+    let commands: Vec<&str> = command.split("2>>").collect();
+    execute_commands_with_args(commands, executor, Action::AppendStderr);
 }
 
 pub fn execute_commands_with_args<F>(commands: Vec<&str>, executor: F, action: Action)
