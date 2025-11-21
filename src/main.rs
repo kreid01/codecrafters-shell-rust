@@ -83,7 +83,7 @@ pub fn autocomplete(command: &String) -> String {
         }
     }
 
-    return command.to_owned();
+    return format!("{}\x07", command.to_owned());
 }
 
 fn pwd() {
