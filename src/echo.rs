@@ -5,7 +5,7 @@ use crate::{
     executor::execute_with_redirect,
     utils::{
         parser, printer,
-        writer::{self, make_dir},
+        writer::{self, make_file},
     },
 };
 
@@ -41,7 +41,7 @@ pub fn write_echo(
 
 pub fn echo_stderr(output_path: &path::PathBuf, lines: Vec<String>) {
     printer::print_lines(lines);
-    make_dir(output_path.to_owned());
+    make_file(output_path.to_owned());
 }
 
 pub fn default_echo(command: &str) {

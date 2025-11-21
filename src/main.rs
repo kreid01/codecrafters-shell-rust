@@ -1,7 +1,12 @@
 use std::env::{self};
-use std::io::{self, Write};
+use std::io::{self, stdin, stdout, Write};
 use std::os::unix::fs::PermissionsExt;
 use std::process::ExitCode;
+use std::result::Result::Ok;
+use termion::clear;
+use termion::event::Key;
+use termion::input::TermRead;
+use termion::raw::IntoRawMode;
 
 mod actions;
 mod cat;
@@ -16,26 +21,69 @@ const BUILTINS: [&str; 5] = ["exit", "echo", "type", "pwd", "cd"];
 
 fn main() -> ExitCode {
     loop {
-        print!("$ ");
+        print!("\r$ ");
         io::stdout().flush().unwrap();
 
-        let mut command = String::new();
-        io::stdin().read_line(&mut command).unwrap();
+        let mut stdout = stdout().into_raw_mode().unwrap();
+        let stdin = stdin();
 
-        if command.split_whitespace().nth(0).unwrap() == "exit" {
-            return ExitCode::from(0);
+        let mut command = String::new();
+
+        for c in stdin.keys() {
+            match c.unwrap() {
+                Key::Char('\n') => {
+                    println!("\r");
+                    break;
+                }
+                Key::Char('\t') => {
+                    let autocomplete = autocomplete(&command);
+                    print!("{}\r$ {}", clear::CurrentLine, autocomplete);
+                    command = autocomplete;
+                }
+                Key::Backspace => {
+                    command.pop();
+                    write!(stdout, "\x08 \x08").unwrap();
+                }
+                Key::Char(c) => {
+                    command.push(c);
+                    write!(stdout, "{}", c).unwrap();
+                }
+                Key::Ctrl('c') => {
+                    return ExitCode::from(0);
+                }
+                _ => {}
+            }
+
+            stdout.flush().unwrap();
         }
 
-        match command.split_whitespace().nth(0).unwrap() {
-            "echo" => echo::echo(command),
-            "type" => execute_type(&command),
-            "pwd" => pwd(),
-            "cd" => cd::cd(&command),
-            "cat" => cat::cat(&command),
-            "ls" => ls::ls(command),
+        if command.is_empty() {
+            continue;
+        }
+
+        match command {
+            cmd if cmd.starts_with("exit") => {
+                return ExitCode::from(0);
+            }
+            cmd if cmd.starts_with("echo") => echo::echo(cmd),
+            cmd if cmd.starts_with("type") => execute_type(cmd),
+            cmd if cmd.starts_with("pwd") => pwd(),
+            cmd if cmd.starts_with("cd") => cd::cd(cmd.as_str()),
+            cmd if cmd.starts_with("cat") => cat::cat(cmd.as_str()),
+            cmd if cmd.starts_with("ls") => ls::ls(cmd),
             _ => executor::execute(&command),
-        };
+        }
     }
+}
+
+pub fn autocomplete(command: &String) -> String {
+    for x in BUILTINS {
+        if x.starts_with(command) {
+            return format!("{} ", x).to_string().to_owned();
+        }
+    }
+
+    return command.to_owned();
 }
 
 fn pwd() {
@@ -43,7 +91,7 @@ fn pwd() {
     println!("{}", curr_dir.display())
 }
 
-pub fn execute_type(command: &str) {
+pub fn execute_type(command: String) {
     let cmd = command.split_whitespace().nth(1).unwrap_or("");
     if BUILTINS.contains(&cmd) {
         println!("{} is a shell builtin", cmd);

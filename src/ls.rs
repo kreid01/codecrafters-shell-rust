@@ -4,11 +4,12 @@ use std::{
 };
 
 use crate::{
+    cd::get_curr_directory,
     enums::actions::Action,
     executor::execute_with_redirect,
     utils::{
         printer,
-        writer::{self, make_dir},
+        writer::{self, make_file},
     },
 };
 
@@ -33,14 +34,14 @@ pub fn execute_ls(output_path: &PathBuf, command: &String, args: Vec<String>, ex
             match executor {
                 Action::AppendStdout => {
                     let _ = writer::append(output_path.to_path_buf(), lines);
-                    make_dir(output_path.to_owned())
+                    make_file(output_path.to_owned())
                 }
                 Action::AppendStderr => {
                     printer::print_lines(lines);
                 }
                 Action::RedirectStderr => {
                     printer::print_lines(lines);
-                    make_dir(output_path.to_owned())
+                    make_file(output_path.to_owned())
                 }
                 Action::RedirectStdout => {
                     let _ = writer::write(output_path.to_path_buf(), lines);
@@ -50,14 +51,14 @@ pub fn execute_ls(output_path: &PathBuf, command: &String, args: Vec<String>, ex
         Err(err) => match executor {
             Action::AppendStdout => {
                 println!("{}", err);
-                make_dir(output_path.to_owned())
+                make_file(output_path.to_owned())
             }
             Action::AppendStderr => {
                 let _ = writer::append(output_path.to_path_buf(), vec![err]);
             }
             Action::RedirectStdout => {
                 println!("{}", err);
-                make_dir(output_path.to_owned())
+                make_file(output_path.to_owned())
             }
             Action::RedirectStderr => {
                 let _ = writer::write(output_path.to_path_buf(), vec![err]);
@@ -93,7 +94,7 @@ pub fn default_ls(command: &str) {
             }
         }
         Err(err) => {
-            println!("{}", err)
+            println!("\r{}", err)
         }
     }
 }

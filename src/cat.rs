@@ -5,7 +5,7 @@ use crate::{
     executor::execute_with_redirect,
     utils::{
         parser,
-        writer::{self, make_dir},
+        writer::{self, make_file},
     },
 };
 
@@ -23,28 +23,28 @@ pub fn execute_cat(output_path: &PathBuf, command: &String, _args: Vec<String>, 
                 let _ = writer::write(output_path.to_owned(), vec![content]);
             }
             Action::RedirectStderr => {
-                println!("{}", content);
-                make_dir(output_path.to_owned())
+                println!("\r{}", content);
+                make_file(output_path.to_owned())
             }
             Action::AppendStdout => {
                 let _ = writer::append(output_path.to_owned(), vec![content]);
             }
             Action::AppendStderr => {
-                println!("{}", content);
-                make_dir(output_path.to_owned())
+                println!("\r{}", content);
+                make_file(output_path.to_owned())
             }
         },
         Err(_) => match action {
             Action::RedirectStdout => {
                 println!("{}", err);
-                make_dir(output_path.to_owned())
+                make_file(output_path.to_owned())
             }
             Action::RedirectStderr => {
                 let _ = writer::write(output_path.to_owned(), vec![err]);
             }
             Action::AppendStdout => {
                 println!("{}", err);
-                make_dir(output_path.to_owned())
+                make_file(output_path.to_owned())
             }
             Action::AppendStderr => {
                 let _ = writer::append(output_path.to_owned(), vec![err]);
@@ -68,14 +68,14 @@ pub fn default_cat(command: &str) {
         }
     }
 
-    println!("{}", output);
+    println!("\r{}", output);
 }
 
 pub fn get_cat_result(command: &String) -> Result<String, String> {
     match fs::read_to_string(command) {
         Ok(contents) => Ok(contents.trim().to_string()),
         Err(_) => {
-            let err = format!("cat: {}: No such file or directory", command);
+            let err = format!("\rcat: {}: No such file or directory", command);
             return Err(err);
         }
     }

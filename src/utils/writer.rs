@@ -8,7 +8,7 @@ pub fn write(file_name: PathBuf, contents: Vec<String>) -> io::Result<()> {
     let mut file = LineWriter::new(file);
 
     for x in contents {
-        let buff = format!("{}\n", x);
+        let buff = format!("\r{}\n", x);
         file.write_all(buff.as_bytes())?;
     }
     Ok(())
@@ -23,12 +23,12 @@ pub fn append(file_name: PathBuf, contents: Vec<String>) -> io::Result<()> {
     let mut writer = LineWriter::new(file);
 
     for line in contents {
-        writeln!(writer, "{}", line)?;
+        writeln!(writer, "\r{}", line)?;
     }
 
     Ok(())
 }
 
-pub fn make_dir(file_name: PathBuf) {
+pub fn make_file(file_name: PathBuf) {
     let _ = OpenOptions::new().append(true).create(true).open(file_name);
 }
