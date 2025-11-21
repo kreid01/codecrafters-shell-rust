@@ -1,19 +1,21 @@
-use std::env::{self};
-use std::fs;
 use std::io::{self, stdin, stdout, Write};
-use std::os::unix::fs::PermissionsExt;
 use std::process::ExitCode;
-use std::result::Result::Ok;
+
 use termion::clear;
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
+
+use crate::cd::pwd;
+use crate::exe::get_exe_path;
+use crate::utils::autocomplete::{self, get_autocomplete_options};
 
 mod actions;
 mod cat;
 mod cd;
 mod echo;
 mod enums;
+mod exe;
 mod executor;
 mod ls;
 mod utils;
@@ -28,41 +30,66 @@ fn main() -> ExitCode {
         let mut stdout = stdout().into_raw_mode().unwrap();
         let stdin = stdin();
 
-        let mut command = String::new();
+        let mut buffer = String::new();
+        let mut last_key: Option<Key> = None;
 
-        for c in stdin.keys() {
-            match c.unwrap() {
+        for c in stdin.keys().flatten() {
+            match c {
                 Key::Char('\n') => {
-                    println!("\r");
+                    stdout.suspend_raw_mode().unwrap();
+                    print!("\n");
+                    stdout.activate_raw_mode().unwrap();
                     break;
                 }
                 Key::Char('\t') => {
-                    let autocomplete = autocomplete(&command);
-                    print!("{}\r$ {}", clear::CurrentLine, autocomplete);
-                    command = autocomplete;
+                    let autocomplete_options = get_autocomplete_options(&buffer);
+                    match autocomplete_options.len() {
+                        0 => {
+                            print!("\x07")
+                        }
+                        1 => {
+                            let autocomplete = autocomplete::autocomplete(&buffer);
+                            print!("{}\r$ {}", clear::CurrentLine, autocomplete);
+                            buffer = autocomplete;
+                        }
+                        _ => {
+                            if let Some(Key::Char('\t')) = last_key {
+                                stdout.suspend_raw_mode().unwrap();
+                                println!();
+                                print!("{}\n", autocomplete_options.join("  "));
+                                stdout.activate_raw_mode().unwrap();
+                                print!("$ {}", buffer);
+                            } else {
+                                print!("\x07");
+                            }
+                        }
+                    }
                 }
                 Key::Backspace => {
-                    command.pop();
+                    buffer.pop();
                     write!(stdout, "\x08 \x08").unwrap();
                 }
                 Key::Char(c) => {
-                    command.push(c);
+                    buffer.push(c);
                     write!(stdout, "{}", c).unwrap();
                 }
                 Key::Ctrl('c') => {
                     return ExitCode::from(0);
                 }
-                _ => {}
+                _ => continue,
             }
 
             stdout.flush().unwrap();
+            last_key = Some(c);
         }
 
-        if command.is_empty() {
+        stdout.suspend_raw_mode().unwrap();
+
+        if buffer.is_empty() {
             continue;
         }
 
-        match command {
+        match buffer {
             cmd if cmd.starts_with("exit") => {
                 return ExitCode::from(0);
             }
@@ -72,31 +99,9 @@ fn main() -> ExitCode {
             cmd if cmd.starts_with("cd") => cd::cd(cmd.as_str()),
             cmd if cmd.starts_with("cat") => cat::cat(cmd.as_str()),
             cmd if cmd.starts_with("ls") => ls::ls(cmd),
-            _ => executor::execute(&command),
+            _ => executor::execute(&buffer),
         }
     }
-}
-
-pub fn autocomplete(command: &String) -> String {
-    for x in BUILTINS {
-        if x.starts_with(command) {
-            return format!("{} ", x).to_string().to_owned();
-        }
-    }
-
-    let exes = get_exe_paths();
-    for x in exes {
-        if x.starts_with(command) {
-            return format!("{} ", x).to_string().to_owned();
-        }
-    }
-
-    return format!("{}\x07", command.to_owned());
-}
-
-fn pwd() {
-    let curr_dir = env::current_dir().unwrap();
-    println!("{}", curr_dir.display())
 }
 
 pub fn execute_type(command: String) {
@@ -108,46 +113,4 @@ pub fn execute_type(command: String) {
     } else {
         println!("{}: not found", cmd.trim());
     }
-}
-
-fn get_exe_paths() -> Vec<String> {
-    let mut exes: Vec<String> = Vec::new();
-    if let Ok(paths) = env::var("PATH") {
-        for dir in env::split_paths(&paths) {
-            match fs::read_dir(dir) {
-                Ok(entries) => {
-                    for entry in entries {
-                        let entry = entry.unwrap();
-                        if let Ok(metadata) = entry.metadata() {
-                            let permissions = metadata.permissions();
-                            if permissions.mode() & 0o111 != 0 {
-                                exes.push(entry.file_name().to_string_lossy().to_string());
-                            }
-                        }
-                    }
-                }
-                Err(_) => {}
-            }
-        }
-    }
-
-    return exes;
-}
-
-fn get_exe_path(command: &str) -> Option<String> {
-    if let Ok(paths) = env::var("PATH") {
-        for dir in env::split_paths(&paths) {
-            let path = dir.join(command);
-            if path.is_file() {
-                if let Ok(metadata) = path.metadata() {
-                    let permissions = metadata.permissions();
-                    if permissions.mode() & 0o111 != 0 {
-                        return Some(path.to_string_lossy().to_string());
-                    }
-                }
-            }
-        }
-    }
-
-    None
 }

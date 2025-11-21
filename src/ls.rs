@@ -105,22 +105,17 @@ pub fn default_ls_with_command(command: &str) {
 }
 
 pub fn default_ls() {
-    let mut lines = Vec::new();
     let curr_dir = get_curr_directory();
 
-    match fs::read_dir(curr_dir) {
-        Ok(entries) => {
-            for entry in entries {
-                let entry = entry.unwrap();
-                let file_name = entry.file_name().to_string_lossy().to_string();
-                lines.push(file_name);
-            }
+    if let Some(entries) = fs::read_dir(curr_dir).ok() {
+        let mut lines = Vec::new();
 
-            print_lines(lines);
+        for entry in entries.filter_map(|e| e.ok()) {
+            let file_name = entry.file_name().to_string_lossy().to_string();
+            lines.push(file_name);
         }
-        Err(_) => {
-            println!("ls failed");
-        }
+
+        print_lines(lines);
     }
 }
 

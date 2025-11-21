@@ -23,14 +23,14 @@ pub fn execute_cat(output_path: &PathBuf, command: &String, _args: Vec<String>, 
                 let _ = writer::write(output_path.to_owned(), vec![content]);
             }
             Action::RedirectStderr => {
-                println!("\r{}", content);
+                println!("{}", content);
                 make_file(output_path.to_owned())
             }
             Action::AppendStdout => {
                 let _ = writer::append(output_path.to_owned(), vec![content]);
             }
             Action::AppendStderr => {
-                println!("\r{}", content);
+                println!("{}", content);
                 make_file(output_path.to_owned())
             }
         },
@@ -68,14 +68,14 @@ pub fn default_cat(command: &str) {
         }
     }
 
-    println!("\r{}", output);
+    println!("{}", output);
 }
 
 pub fn get_cat_result(command: &String) -> Result<String, String> {
     match fs::read_to_string(command) {
         Ok(contents) => Ok(contents.trim().to_string()),
         Err(_) => {
-            let err = format!("\rcat: {}: No such file or directory", command);
+            let err = format!("cat: {}: No such file or directory", command);
             return Err(err);
         }
     }

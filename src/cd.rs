@@ -78,3 +78,8 @@ pub fn no_file_or_directory(directory: &str) {
         directory.split_whitespace().nth(0).unwrap()
     )
 }
+
+pub fn pwd() {
+    let curr_dir = env::current_dir().unwrap();
+    println!("{}", curr_dir.display())
+}
