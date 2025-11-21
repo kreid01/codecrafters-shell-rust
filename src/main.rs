@@ -62,7 +62,7 @@ fn main() -> ExitCode {
         }
 
         match command {
-            cmd if cmd.starts_with("exit") => {
+            cmd if cmd.starts_with("exit 0") => {
                 return ExitCode::from(0);
             }
             cmd if cmd.starts_with("echo") => echo::echo(cmd),
