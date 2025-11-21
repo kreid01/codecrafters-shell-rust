@@ -118,9 +118,12 @@ fn get_exe_paths() -> Vec<String> {
             match fs::read_dir(dir) {
                 Ok(entries) => {
                     for entry in entries {
-                        let path = entry.unwrap().path();
-                        if is_exe(&path) {
-                            exes.push(path.to_string_lossy().to_string());
+                        let entry = entry.unwrap();
+                        if let Ok(metadata) = entry.metadata() {
+                            let permissions = metadata.permissions();
+                            if permissions.mode() & 0o111 != 0 {
+                                exes.push(entry.file_name().to_string_lossy().to_string());
+                            }
                         }
                     }
                 }
