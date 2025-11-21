@@ -8,7 +8,7 @@ use crate::{
     enums::actions::Action,
     executor::execute_with_redirect,
     utils::{
-        printer,
+        printer::{self, print_lines},
         writer::{self, make_file},
     },
 };
@@ -19,7 +19,7 @@ pub struct LsArgs {
 
 pub fn ls(command: String) {
     let command_wo_ls = command.replace("ls ", "");
-    execute_with_redirect(&command_wo_ls, execute_ls, default_ls);
+    execute_with_redirect(&command_wo_ls, execute_ls, default_ls_with_command);
 }
 
 pub fn execute_ls(output_path: &PathBuf, command: &String, args: Vec<String>, executor: &Action) {
@@ -86,7 +86,12 @@ pub fn get_ls_results(command: &str) -> Result<Vec<String>, String> {
     }
 }
 
-pub fn default_ls(command: &str) {
+pub fn default_ls_with_command(command: &str) {
+    if command == "ls" {
+        default_ls();
+        return;
+    }
+
     match get_ls_results(command) {
         Ok(lines) => {
             for line in lines {
@@ -95,6 +100,26 @@ pub fn default_ls(command: &str) {
         }
         Err(err) => {
             println!("\r{}", err)
+        }
+    }
+}
+
+pub fn default_ls() {
+    let mut lines = Vec::new();
+    let curr_dir = get_curr_directory();
+
+    match fs::read_dir(curr_dir) {
+        Ok(entries) => {
+            for entry in entries {
+                let entry = entry.unwrap();
+                let file_name = entry.file_name().to_string_lossy().to_string();
+                lines.push(file_name);
+            }
+
+            print_lines(lines);
+        }
+        Err(_) => {
+            println!("ls failed");
         }
     }
 }
