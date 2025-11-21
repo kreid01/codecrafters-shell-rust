@@ -2,7 +2,6 @@ use std::env::{self};
 use std::fs;
 use std::io::{self, stdin, stdout, Write};
 use std::os::unix::fs::PermissionsExt;
-use std::path::PathBuf;
 use std::process::ExitCode;
 use std::result::Result::Ok;
 use termion::clear;
@@ -139,22 +138,16 @@ fn get_exe_path(command: &str) -> Option<String> {
     if let Ok(paths) = env::var("PATH") {
         for dir in env::split_paths(&paths) {
             let path = dir.join(command);
-            if path.is_file() && is_exe(&path) {
-                Some(path.to_string_lossy().to_string());
+            if path.is_file() {
+                if let Ok(metadata) = path.metadata() {
+                    let permissions = metadata.permissions();
+                    if permissions.mode() & 0o111 != 0 {
+                        return Some(path.to_string_lossy().to_string());
+                    }
+                }
             }
         }
     }
 
     None
-}
-
-pub fn is_exe(path: &PathBuf) -> bool {
-    if let Ok(metadata) = path.metadata() {
-        let permissions = metadata.permissions();
-        if permissions.mode() & 0o111 != 0 {
-            return true;
-        }
-    }
-
-    return false;
 }
