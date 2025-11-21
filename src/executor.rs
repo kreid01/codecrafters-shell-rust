@@ -82,6 +82,5 @@ pub fn execute(command: &str) {
     };
 
     let output = String::from_utf8_lossy(&input.stdout);
-    let output = output.replace('\n', "\r\n");
     print!("{}", output);
 }

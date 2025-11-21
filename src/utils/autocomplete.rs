@@ -14,6 +14,21 @@ pub fn get_autocomplete_options(command: &str) -> Vec<String> {
     return output;
 }
 
+pub fn get_autocomplete_prefix(options: &Vec<String>) -> String {
+    let mut prefix = options[0].clone();
+
+    for s in options.iter() {
+        while !s.starts_with(&prefix) {
+            if prefix.is_empty() {
+                return String::new();
+            }
+            prefix.pop();
+        }
+    }
+
+    prefix
+}
+
 pub fn autocomplete(command: &String) -> String {
     let options = get_options();
     for option in options {

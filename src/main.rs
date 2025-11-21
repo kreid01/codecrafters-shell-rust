@@ -8,7 +8,7 @@ use termion::raw::IntoRawMode;
 
 use crate::cd::pwd;
 use crate::exe::get_exe_path;
-use crate::utils::autocomplete::{self, get_autocomplete_options};
+use crate::utils::autocomplete::{self, get_autocomplete_options, get_autocomplete_prefix};
 
 mod actions;
 mod cat;
@@ -43,6 +43,13 @@ fn main() -> ExitCode {
                 }
                 Key::Char('\t') => {
                     let autocomplete_options = get_autocomplete_options(&buffer);
+                    let autocomplete_prefix = get_autocomplete_prefix(&autocomplete_options);
+
+                    if autocomplete_prefix != buffer {
+                        println!("\r$ {}", autocomplete_prefix);
+                        buffer = autocomplete_prefix;
+                        continue;
+                    }
                     match autocomplete_options.len() {
                         0 => {
                             print!("\x07")
