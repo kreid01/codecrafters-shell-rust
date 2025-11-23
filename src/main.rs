@@ -43,12 +43,17 @@ fn main() -> ExitCode {
                 }
                 Key::Char('\t') => {
                     let autocomplete_options = get_autocomplete_options(&buffer);
-                    let autocomplete_prefix = get_autocomplete_prefix(&autocomplete_options);
 
-                    if autocomplete_prefix != buffer {
-                        println!("\r$ {}", autocomplete_prefix);
-                        buffer = autocomplete_prefix;
-                        continue;
+                    if let Some((autocomplete_prefix, count)) =
+                        get_autocomplete_prefix(&autocomplete_options)
+                    {
+                        if autocomplete_prefix != buffer {
+                            let suffix = if count == 1 { " " } else { "" };
+                            print!("\r$ {}{}", autocomplete_prefix, suffix);
+                            stdout.flush().unwrap();
+                            buffer = format!("{}{}", autocomplete_prefix, suffix);
+                            continue;
+                        }
                     }
                     match autocomplete_options.len() {
                         0 => {

@@ -14,19 +14,17 @@ pub fn get_autocomplete_options(command: &str) -> Vec<String> {
     return output;
 }
 
-pub fn get_autocomplete_prefix(options: &Vec<String>) -> String {
-    let mut prefix = options[0].clone();
+pub fn get_autocomplete_prefix(options: &[String]) -> Option<(String, usize)> {
+    let mut prefix = options.first()?.clone();
 
     for s in options.iter() {
         while !s.starts_with(&prefix) {
-            if prefix.is_empty() {
-                return String::new();
-            }
-            prefix.pop();
+            prefix.pop()?;
         }
     }
 
-    prefix
+    let count = options.iter().filter(|x| x.starts_with(&prefix)).count();
+    Some((prefix, count))
 }
 
 pub fn autocomplete(command: &String) -> String {
