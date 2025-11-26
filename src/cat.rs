@@ -9,9 +9,15 @@ use crate::{
     },
 };
 
-pub fn cat(command: &str) {
+pub enum CommandResult {
+    Output(String),
+    Success,
+    Failed,
+}
+
+pub fn cat(command: &str) -> CommandResult {
     let command_wo_cat = str::replace(&command, "cat ", "");
-    execute_with_redirect(&command_wo_cat, execute_cat, default_cat);
+    return execute_with_redirect(&command_wo_cat, execute_cat, default_cat);
 }
 
 pub fn execute_cat(output_path: &PathBuf, command: &String, _args: Vec<String>, action: &Action) {
@@ -53,7 +59,7 @@ pub fn execute_cat(output_path: &PathBuf, command: &String, _args: Vec<String>, 
     }
 }
 
-pub fn default_cat(command: &str) {
+pub fn default_cat(command: &str) -> CommandResult {
     let args = parser::get_formatted_args(&command);
     let mut output = String::new();
 
@@ -68,12 +74,12 @@ pub fn default_cat(command: &str) {
         }
     }
 
-    println!("{}", output);
+    return CommandResult::Output(output);
 }
 
 pub fn get_cat_result(command: &String) -> Result<String, String> {
     match fs::read_to_string(command) {
-        Ok(contents) => Ok(contents.trim().to_string()),
+        Ok(contents) => Ok(contents.to_string()),
         Err(_) => {
             let err = format!("cat: {}: No such file or directory", command);
             return Err(err);

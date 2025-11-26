@@ -8,30 +8,35 @@ use crate::{
         appends::{append_stderr, append_stdout},
         redirect::{redirect_stderr, redirect_stdout},
     },
+    cat::CommandResult,
     enums::actions::Action,
     utils::parser,
 };
 
-pub fn execute_with_redirect<R, D>(command: &str, executor: R, default: D)
+pub fn execute_with_redirect<R, D>(command: &str, executor: R, default: D) -> CommandResult
 where
     R: Fn(&PathBuf, &String, Vec<String>, &Action),
-    D: Fn(&str),
+    D: Fn(&str) -> CommandResult,
 {
     match command {
         _append_output if command.contains("2>>") => {
             append_stderr(command, executor);
+            return CommandResult::Success;
         }
         _append_error if command.contains("1>>") || command.contains(">>") => {
             append_stdout(command, executor);
+            return CommandResult::Success;
         }
         _redirect_error if command.contains("2>") => {
             redirect_stderr(&command, executor);
+            return CommandResult::Success;
         }
         _redirect_output if command.contains("1>") || command.contains(">") => {
             redirect_stdout(&command, executor);
+            return CommandResult::Success;
         }
         _ => {
-            default(command);
+            return default(command);
         }
     }
 }
@@ -70,17 +75,19 @@ pub fn get_commands_and_args(commands: Vec<String>) -> (Vec<String>, Vec<String>
     return (command_wo_args, args);
 }
 
-pub fn execute(command: &str) {
+pub fn execute(command: &str) -> CommandResult {
     let (exe, args) = parser::parse_execute_command(command);
 
-    let input = match Command::new(exe.trim()).args(args).output() {
+    let input = match Command::new(exe.trim()).args(&args).output() {
         Ok(output) => output,
         Err(_) => {
             println!("{}: command not found", command.trim());
-            return;
+            return CommandResult::Failed;
         }
     };
 
     let output = String::from_utf8_lossy(&input.stdout);
+
     print!("{}", output);
+    CommandResult::Success
 }

@@ -1,23 +1,27 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-pub fn cd(command: &str) {
+use crate::cat::CommandResult;
+
+pub fn cd(command: &str) -> CommandResult {
     let directory = command.split_whitespace().nth(1).unwrap();
 
     if directory.starts_with("./") {
         cd_relative(command);
-        return;
+        return CommandResult::Success;
     } else if directory.starts_with("../") {
         cd_back(command);
-        return;
+        return CommandResult::Success;
     } else if directory.starts_with("~") {
         cd_home();
-        return;
+        return CommandResult::Success;
     }
 
     if cd_absolute(directory).is_none() {
         no_file_or_directory(directory);
     }
+
+    return CommandResult::Success;
 }
 
 pub fn cd_absolute(directory: &str) -> Option<()> {
@@ -79,7 +83,10 @@ pub fn no_file_or_directory(directory: &str) {
     )
 }
 
-pub fn pwd() {
+pub fn pwd() -> CommandResult {
     let curr_dir = env::current_dir().unwrap();
-    println!("{}", curr_dir.display())
+    let output = format!("{}", curr_dir.display());
+
+    println!("{}", output);
+    return CommandResult::Success;
 }

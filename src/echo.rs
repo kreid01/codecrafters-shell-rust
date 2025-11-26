@@ -1,6 +1,7 @@
 use std::path;
 
 use crate::{
+    cat::CommandResult,
     enums::actions::Action,
     executor::execute_with_redirect,
     utils::{
@@ -9,9 +10,9 @@ use crate::{
     },
 };
 
-pub fn echo(command: String) {
+pub fn echo(command: &str) -> CommandResult {
     let command_wo_echo = str::replace(&command, "echo ", "");
-    execute_with_redirect(&command_wo_echo, write_echo, default_echo);
+    return execute_with_redirect(&command_wo_echo, write_echo, default_echo);
 }
 
 pub fn write_echo(
@@ -44,7 +45,9 @@ pub fn echo_stderr(output_path: &path::PathBuf, lines: Vec<String>) {
     make_file(output_path.to_owned());
 }
 
-pub fn default_echo(command: &str) {
+pub fn default_echo(command: &str) -> CommandResult {
     let formatted_command = parser::format_string_command(&command);
+
     println!("{}", &formatted_command.trim());
+    return CommandResult::Success;
 }

@@ -4,6 +4,7 @@ use std::{
 };
 
 use crate::{
+    cat::CommandResult,
     cd::get_curr_directory,
     enums::actions::Action,
     executor::execute_with_redirect,
@@ -17,9 +18,9 @@ pub struct LsArgs {
     sort: bool,
 }
 
-pub fn ls(command: String) {
+pub fn ls(command: &str) -> CommandResult {
     let command_wo_ls = command.replace("ls ", "");
-    execute_with_redirect(&command_wo_ls, execute_ls, default_ls_with_command);
+    return execute_with_redirect(&command_wo_ls, execute_ls, default_ls_with_command);
 }
 
 pub fn execute_ls(output_path: &PathBuf, command: &String, args: Vec<String>, executor: &Action) {
@@ -86,10 +87,9 @@ pub fn get_ls_results(command: &str) -> Result<Vec<String>, String> {
     }
 }
 
-pub fn default_ls_with_command(command: &str) {
+pub fn default_ls_with_command(command: &str) -> CommandResult {
     if command == "ls" {
-        default_ls();
-        return;
+        return default_ls();
     }
 
     match get_ls_results(command) {
@@ -97,14 +97,17 @@ pub fn default_ls_with_command(command: &str) {
             for line in lines {
                 println!("{}", line)
             }
+
+            return CommandResult::Success;
         }
         Err(err) => {
-            println!("\r{}", err)
+            println!("{}", err);
+            return CommandResult::Failed;
         }
     }
 }
 
-pub fn default_ls() {
+pub fn default_ls() -> CommandResult {
     let curr_dir = get_curr_directory();
 
     if let Some(entries) = fs::read_dir(curr_dir).ok() {
@@ -116,7 +119,10 @@ pub fn default_ls() {
         }
 
         print_lines(lines);
+        return CommandResult::Success;
     }
+
+    return CommandResult::Failed;
 }
 
 pub fn check_ls_args(args: Vec<String>) -> LsArgs {
