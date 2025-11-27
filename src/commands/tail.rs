@@ -4,8 +4,8 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
-use crate::cat::CommandResult;
-use crate::Command;
+use crate::commands::head::heads_or_tails;
+use crate::commands::{Command, CommandResult};
 
 pub struct Tail;
 impl Command for Tail {
@@ -19,18 +19,17 @@ impl Command for Tail {
 }
 
 pub fn tail(command: &str) -> CommandResult {
-    let path = command.to_owned();
-    let piped_buffer: Vec<&str> = command.split('|').map(|x| x.trim()).collect();
-    let next_command = piped_buffer.last().unwrap();
-
-    let ln = 0;
-
-    match next_command {
-        cmd if cmd.starts_with("head -n") => {}
-        _ => {}
+    if command.contains("-f") {
+        return tail_watch(command);
     }
 
-    let fp = Arc::new(Mutex::new(path));
+    return heads_or_tails(command, true);
+}
+
+fn tail_watch(command: &str) -> CommandResult {
+    let ln = 0;
+    let command = command.to_owned();
+    let fp = Arc::new(Mutex::new(command));
     let lnp = Arc::new(Mutex::new(ln));
 
     thread::spawn(move || {

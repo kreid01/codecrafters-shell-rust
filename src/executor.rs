@@ -8,7 +8,7 @@ use crate::{
         appends::{append_stderr, append_stdout},
         redirect::{redirect_stderr, redirect_stdout},
     },
-    cat::CommandResult,
+    commands::CommandResult,
     enums::actions::Action,
     utils::parser,
 };

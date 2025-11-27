@@ -1,8 +1,7 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-use crate::cat::CommandResult;
-use crate::Command;
+use crate::commands::{Command, CommandResult};
 
 pub struct Cd;
 impl Command for Cd {

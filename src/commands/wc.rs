@@ -1,6 +1,6 @@
 use std::{fs::File, io::Read};
 
-use crate::{cat::CommandResult, Command};
+use crate::commands::{Command, CommandResult};
 
 pub struct Wc;
 impl Command for Wc {

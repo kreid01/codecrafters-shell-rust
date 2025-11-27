@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::{exe, BUILTINS};
+use crate::{commands::exe, BUILTINS};
 
 pub fn get_autocomplete_options(command: &str) -> Vec<String> {
     let mut options = get_options();

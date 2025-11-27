@@ -1,4 +1,7 @@
-use crate::{cat::CommandResult, exe::get_exe_path, Command, BUILTINS};
+use crate::{
+    commands::{exe::get_exe_path, Command, CommandResult},
+    BUILTINS,
+};
 
 pub struct Type;
 impl Command for Type {

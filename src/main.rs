@@ -2,36 +2,16 @@ use std::collections::VecDeque;
 use std::io::{self, Write};
 use std::process::ExitCode;
 
-use crate::cat::{Cat, CommandResult};
-use crate::cd::Cd;
-use crate::echo::Echo;
-use crate::execute_type::Type;
-use crate::ls::Ls;
-use crate::pwd::Pwd;
-use crate::tail::Tail;
+use crate::commands::{get_commands, CommandResult};
 use crate::utils::input_handler::{handle_input, InputResult};
-use crate::wc::Wc;
 
 mod actions;
-mod cat;
-mod cd;
-mod echo;
+mod commands;
 mod enums;
-mod exe;
-mod execute_type;
 mod executor;
-mod ls;
-mod pwd;
-mod tail;
 mod utils;
-mod wc;
 
 const BUILTINS: [&str; 5] = ["exit", "echo", "type", "pwd", "cd"];
-
-trait Command {
-    fn name(&self) -> &'static str;
-    fn run(&self, cmd: &str) -> CommandResult;
-}
 
 fn main() -> ExitCode {
     loop {
@@ -52,16 +32,7 @@ fn main() -> ExitCode {
         }
 
         let mut commands_queue: VecDeque<&str> = buffer.split("|").collect();
-        let commands: Vec<Box<dyn Command>> = vec![
-            Box::new(Echo),
-            Box::new(Pwd),
-            Box::new(Cd),
-            Box::new(Cat),
-            Box::new(Type),
-            Box::new(Ls),
-            Box::new(Wc),
-            Box::new(Tail),
-        ];
+        let commands = get_commands();
 
         let mut piped_args = String::new();
 

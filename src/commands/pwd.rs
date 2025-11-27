@@ -1,6 +1,6 @@
 use std::env;
 
-use crate::{cat::CommandResult, Command};
+use crate::commands::{Command, CommandResult};
 
 pub struct Pwd;
 impl Command for Pwd {

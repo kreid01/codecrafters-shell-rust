@@ -1,14 +1,13 @@
 use std::path;
 
 use crate::{
-    cat::CommandResult,
+    commands::{Command, CommandResult},
     enums::actions::Action,
     executor::execute_with_redirect,
     utils::{
         parser, printer,
         writer::{self, make_file},
     },
-    Command,
 };
 
 pub struct Echo;

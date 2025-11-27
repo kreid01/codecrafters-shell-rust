@@ -1,20 +1,14 @@
 use std::{fs, path::PathBuf};
 
 use crate::{
+    commands::{Command, CommandResult},
     enums::actions::Action,
     executor::execute_with_redirect,
     utils::{
         parser,
         writer::{self, make_file},
     },
-    Command,
 };
-
-pub enum CommandResult {
-    Output(String),
-    Success,
-    Failed,
-}
 
 pub struct Cat;
 impl Command for Cat {
