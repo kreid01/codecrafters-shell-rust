@@ -58,7 +58,5 @@ pub fn echo_stderr(output_path: &path::PathBuf, lines: Vec<String>) {
 
 pub fn default_echo(command: &str) -> CommandResult {
     let formatted_command = parser::format_string_command(&command);
-
-    println!("{}", &formatted_command.trim());
-    return CommandResult::Success;
+    return CommandResult::Output(formatted_command.to_string());
 }

@@ -99,7 +99,7 @@ pub fn get_ls_results(command: &str) -> Result<Vec<String>, String> {
 }
 
 pub fn default_ls_with_command(command: &str) -> CommandResult {
-    if command == "ls" {
+    if command.is_empty() {
         return default_ls();
     }
 
@@ -129,8 +129,7 @@ pub fn default_ls() -> CommandResult {
             lines.push(file_name);
         }
 
-        print_lines(lines);
-        return CommandResult::Success;
+        return CommandResult::Output(lines.join("\n"));
     }
 
     return CommandResult::Failed;
