@@ -7,6 +7,7 @@ use crate::{
         parser,
         writer::{self, make_file},
     },
+    Command,
 };
 
 pub enum CommandResult {
@@ -15,9 +16,19 @@ pub enum CommandResult {
     Failed,
 }
 
+pub struct Cat;
+impl Command for Cat {
+    fn name(&self) -> &'static str {
+        "cat"
+    }
+    fn run(&self, cmd: &str) -> CommandResult {
+        let command = str::replace(&cmd, "cat ", "");
+        return cat(&command);
+    }
+}
+
 pub fn cat(command: &str) -> CommandResult {
-    let command_wo_cat = str::replace(&command, "cat ", "");
-    return execute_with_redirect(&command_wo_cat, execute_cat, default_cat);
+    return execute_with_redirect(&command, execute_cat, default_cat);
 }
 
 pub fn execute_cat(output_path: &PathBuf, command: &String, _args: Vec<String>, action: &Action) {
@@ -29,14 +40,14 @@ pub fn execute_cat(output_path: &PathBuf, command: &String, _args: Vec<String>, 
                 let _ = writer::write(output_path.to_owned(), vec![content]);
             }
             Action::RedirectStderr => {
-                println!("{}", content);
+                println!("{}", content.trim());
                 make_file(output_path.to_owned())
             }
             Action::AppendStdout => {
                 let _ = writer::append(output_path.to_owned(), vec![content]);
             }
             Action::AppendStderr => {
-                println!("{}", content);
+                println!("{}", content.trim());
                 make_file(output_path.to_owned())
             }
         },

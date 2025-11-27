@@ -8,11 +8,22 @@ use crate::{
         parser, printer,
         writer::{self, make_file},
     },
+    Command,
 };
 
+pub struct Echo;
+impl Command for Echo {
+    fn name(&self) -> &'static str {
+        "echo"
+    }
+    fn run(&self, cmd: &str) -> CommandResult {
+        let command = cmd.replace("echo ", "");
+        echo(&command)
+    }
+}
+
 pub fn echo(command: &str) -> CommandResult {
-    let command_wo_echo = str::replace(&command, "echo ", "");
-    return execute_with_redirect(&command_wo_echo, write_echo, default_echo);
+    return execute_with_redirect(&command, write_echo, default_echo);
 }
 
 pub fn write_echo(

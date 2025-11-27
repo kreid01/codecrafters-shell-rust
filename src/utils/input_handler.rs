@@ -68,6 +68,9 @@ pub fn handle_input() -> InputResult {
                 }
             }
             Key::Backspace => {
+                if buffer.len() == 0 {
+                    continue;
+                }
                 buffer.pop();
                 write!(stdout, "\x08 \x08").unwrap();
             }

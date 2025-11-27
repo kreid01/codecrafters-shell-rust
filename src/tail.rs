@@ -1,55 +1,61 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
 use crate::cat::CommandResult;
+use crate::Command;
+
+pub struct Tail;
+impl Command for Tail {
+    fn name(&self) -> &'static str {
+        "tail"
+    }
+    fn run(&self, cmd: &str) -> CommandResult {
+        let command = cmd.replace("tail -f ", "");
+        return tail(&command);
+    }
+}
 
 pub fn tail(command: &str) -> CommandResult {
-    let file_path = command.replace("tail -f", "");
-
+    let path = command.to_owned();
     let piped_buffer: Vec<&str> = command.split('|').map(|x| x.trim()).collect();
     let next_command = piped_buffer.last().unwrap();
 
+    let ln = 0;
+
     match next_command {
-        cmd if cmd.starts_with("head") => {}
+        cmd if cmd.starts_with("head -n") => {}
         _ => {}
     }
 
-    let mut ln = 0;
-
-    let fp = Arc::new(Mutex::new(file_path.clone()));
+    let fp = Arc::new(Mutex::new(path));
     let lnp = Arc::new(Mutex::new(ln));
-
-    let (tx, rx) = channel();
 
     thread::spawn(move || {
         match fp.lock() {
             Ok(fp_unlocked) => {
-                let file = File::open(&*fp_unlocked).unwrap();
-                let mut reader = BufReader::new(file);
+                if let Ok(file) = File::open(&*fp_unlocked.trim()) {
+                    let mut reader = BufReader::new(file);
 
-                loop {
-                    match lnp.lock() {
-                        Ok(lnl_l) => {
-                            if *lnl_l == 5 {
+                    loop {
+                        if let Ok(unlocked_lnp) = lnp.lock() {
+                            if *unlocked_lnp == 5 {
                                 break;
                             }
                         }
-                        Err(_) => {}
-                    }
 
-                    let mut line = String::new();
-                    if reader.read_line(&mut line).unwrap_or(0) == 0 {
-                        thread::sleep(Duration::from_millis(100));
-                    } else {
-                        print!("{}", line);
-                        tx.send(line).unwrap();
-                        match lnp.lock() {
-                            Ok(mut lnp_l) => *lnp_l += 1,
-                            Err(_) => {}
+                        let mut line = String::new();
+
+                        if reader.read_line(&mut line).unwrap_or(0) == 0 {
+                            thread::sleep(Duration::from_millis(100));
+                        } else {
+                            print!("\r{}", line);
+                            match lnp.lock() {
+                                Ok(mut lnp_l) => *lnp_l += 1,
+                                Err(_) => {}
+                            }
                         }
                     }
                 }
@@ -60,10 +66,5 @@ pub fn tail(command: &str) -> CommandResult {
         };
     });
 
-    let mut lines = String::new();
-    for received in rx.iter() {
-        lines.push_str(&received);
-    }
-
-    return CommandResult::Output(lines);
+    return CommandResult::Success;
 }

@@ -11,6 +11,7 @@ pub fn write(file_name: PathBuf, contents: Vec<String>) -> io::Result<()> {
         let buff = format!("\r{}\n", x);
         file.write_all(buff.as_bytes())?;
     }
+
     Ok(())
 }
 

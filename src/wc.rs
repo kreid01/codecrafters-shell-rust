@@ -1,17 +1,27 @@
 use std::{fs::File, io::Read};
 
-use crate::cat::CommandResult;
+use crate::{cat::CommandResult, Command};
 
-pub fn wc(args: &str) -> CommandResult {
-    println!("{}", args);
-    let file = File::open(args);
+pub struct Wc;
+impl Command for Wc {
+    fn name(&self) -> &'static str {
+        "wc"
+    }
+    fn run(&self, cmd: &str) -> CommandResult {
+        let command = cmd.replace("wc ", "");
+        return wc(&command);
+    }
+}
+
+pub fn wc(command: &str) -> CommandResult {
+    let file = File::open(&command);
     let contents: String = match file {
         Ok(mut f) => {
             let mut contents = String::new();
             let _ = f.read_to_string(&mut contents);
             contents
         }
-        Err(_) => args.to_string(),
+        Err(_) => command.to_string(),
     };
 
     let result = format!(

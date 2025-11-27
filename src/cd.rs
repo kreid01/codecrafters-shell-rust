@@ -2,6 +2,17 @@ use std::env;
 use std::path::{Path, PathBuf};
 
 use crate::cat::CommandResult;
+use crate::Command;
+
+pub struct Cd;
+impl Command for Cd {
+    fn name(&self) -> &'static str {
+        "cd"
+    }
+    fn run(&self, cmd: &str) -> CommandResult {
+        return cd(cmd);
+    }
+}
 
 pub fn cd(command: &str) -> CommandResult {
     let directory = command.split_whitespace().nth(1).unwrap();
@@ -81,12 +92,4 @@ pub fn no_file_or_directory(directory: &str) {
         "cd: {}: No such file or directory",
         directory.split_whitespace().nth(0).unwrap()
     )
-}
-
-pub fn pwd() -> CommandResult {
-    let curr_dir = env::current_dir().unwrap();
-    let output = format!("{}", curr_dir.display());
-
-    println!("{}", output);
-    return CommandResult::Success;
 }

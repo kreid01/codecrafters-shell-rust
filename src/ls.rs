@@ -12,15 +12,26 @@ use crate::{
         printer::{self, print_lines},
         writer::{self, make_file},
     },
+    Command,
 };
+
+pub struct Ls;
+impl Command for Ls {
+    fn name(&self) -> &'static str {
+        "ls"
+    }
+    fn run(&self, cmd: &str) -> CommandResult {
+        let command = cmd.replace("ls ", "");
+        return ls(&command);
+    }
+}
 
 pub struct LsArgs {
     sort: bool,
 }
 
 pub fn ls(command: &str) -> CommandResult {
-    let command_wo_ls = command.replace("ls ", "");
-    return execute_with_redirect(&command_wo_ls, execute_ls, default_ls_with_command);
+    return execute_with_redirect(&command, execute_ls, default_ls_with_command);
 }
 
 pub fn execute_ls(output_path: &PathBuf, command: &String, args: Vec<String>, executor: &Action) {
