@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::io::{self, Write};
 use std::process::ExitCode;
 
-use crate::commands::{get_commands, CommandResult};
+use crate::commands::{get_commands, history, CommandResult};
 use crate::utils::input_handler::{handle_input, InputResult};
 
 mod actions;
@@ -14,6 +14,8 @@ mod utils;
 const BUILTINS: [&str; 6] = ["exit", "echo", "type", "pwd", "cd", "history"];
 
 fn main() -> ExitCode {
+    let mut history: Vec<String> = Vec::new();
+
     loop {
         print!("\r$ ");
         io::stdout().flush().unwrap();
@@ -27,6 +29,8 @@ fn main() -> ExitCode {
             continue;
         }
 
+        history.push(buffer.to_owned());
+
         let mut commands_queue: VecDeque<&str> = buffer.split("|").collect();
         let commands = get_commands();
 
@@ -38,20 +42,22 @@ fn main() -> ExitCode {
                 return ExitCode::from(0);
             }
 
+            if cmd.starts_with("history") {
+                history::history(&history);
+                break;
+            }
+
             let mut handled = false;
 
             for command in &commands {
                 let args = format!("{} {}", cmd, piped_args);
                 if cmd.starts_with(command.name()) {
-                    match command.run(&args) {
-                        CommandResult::Output(output) => {
-                            if commands_queue.is_empty() {
-                                println!("{}", output.trim())
-                            } else {
-                                piped_args = output;
-                            }
+                    if let CommandResult::Output(output) = command.run(&args) {
+                        if commands_queue.is_empty() {
+                            println!("{}", output.trim())
+                        } else {
+                            piped_args = output;
                         }
-                        _ => {}
                     }
                     handled = true;
                     break;

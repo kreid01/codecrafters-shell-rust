@@ -11,6 +11,7 @@ pub mod exe;
 pub mod execute_type;
 pub mod grep;
 pub mod head;
+pub mod history;
 pub mod ls;
 pub mod pwd;
 pub mod tail;
