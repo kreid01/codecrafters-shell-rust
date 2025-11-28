@@ -43,7 +43,7 @@ fn main() -> ExitCode {
             }
 
             if cmd.starts_with("history") {
-                history::history(&history);
+                history::history(cmd, &history);
                 break;
             }
 
