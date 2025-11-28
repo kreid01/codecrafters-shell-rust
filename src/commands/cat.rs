@@ -16,13 +16,13 @@ impl Command for Cat {
         "cat"
     }
     fn run(&self, cmd: &str) -> CommandResult {
-        let command = str::replace(&cmd, "cat ", "");
-        return cat(&command);
+        let command = str::replace(cmd, "cat ", "");
+        cat(&command)
     }
 }
 
 pub fn cat(command: &str) -> CommandResult {
-    return execute_with_redirect(&command, execute_cat, default_cat);
+    execute_with_redirect(command, execute_cat, default_cat)
 }
 
 pub fn execute_cat(output_path: &PathBuf, command: &String, _args: Vec<String>, action: &Action) {
@@ -65,7 +65,7 @@ pub fn execute_cat(output_path: &PathBuf, command: &String, _args: Vec<String>, 
 }
 
 pub fn default_cat(command: &str) -> CommandResult {
-    let args = parser::get_formatted_args(&command);
+    let args = parser::get_formatted_args(command);
     let mut output = String::new();
 
     for arg in args {
@@ -79,7 +79,7 @@ pub fn default_cat(command: &str) -> CommandResult {
         }
     }
 
-    return CommandResult::Output(output);
+    CommandResult::Output(output)
 }
 
 pub fn get_cat_result(command: &String) -> Result<String, String> {
@@ -87,7 +87,7 @@ pub fn get_cat_result(command: &String) -> Result<String, String> {
         Ok(contents) => Ok(contents.to_string()),
         Err(_) => {
             let err = format!("cat: {}: No such file or directory", command);
-            return Err(err);
+            Err(err)
         }
     }
 }

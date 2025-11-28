@@ -9,7 +9,7 @@ impl Command for Type {
         "type"
     }
     fn run(&self, cmd: &str) -> CommandResult {
-        return execute_type(&cmd);
+        execute_type(cmd)
     }
 }
 
@@ -26,5 +26,5 @@ pub fn execute_type(command: &str) -> CommandResult {
     }
 
     println!("{}", output);
-    return CommandResult::Success;
+    CommandResult::Success
 }

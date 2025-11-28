@@ -17,5 +17,5 @@ pub fn pwd() -> CommandResult {
     let output = format!("{}", curr_dir.display());
 
     println!("{}", output);
-    return CommandResult::Success;
+    CommandResult::Success
 }

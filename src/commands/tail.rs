@@ -13,57 +13,42 @@ impl Command for Tail {
         "tail"
     }
     fn run(&self, cmd: &str) -> CommandResult {
-        let command = cmd.replace("tail -f ", "");
-        return tail(&command);
+        let command = cmd.replace("tail ", "");
+        tail(&command)
     }
 }
 
 pub fn tail(command: &str) -> CommandResult {
     if command.contains("-f") {
-        return tail_watch(command);
+        let command = command.replace("-f ", "");
+        return tail_watch(&command);
     }
 
-    return heads_or_tails(command, true);
+    heads_or_tails(command, true)
 }
 
 fn tail_watch(command: &str) -> CommandResult {
-    let ln = 0;
-    let command = command.to_owned();
-    let fp = Arc::new(Mutex::new(command));
-    let lnp = Arc::new(Mutex::new(ln));
+    let mut ln = 0;
+    let command = command.trim().to_owned();
 
-    thread::spawn(move || {
-        match fp.lock() {
-            Ok(fp_unlocked) => {
-                if let Ok(file) = File::open(&*fp_unlocked.trim()) {
-                    let mut reader = BufReader::new(file);
+    if let Ok(file) = File::open(command.trim()) {
+        let mut reader = BufReader::new(file);
 
-                    loop {
-                        if let Ok(unlocked_lnp) = lnp.lock() {
-                            if *unlocked_lnp == 5 {
-                                break;
-                            }
-                        }
-
-                        let mut line = String::new();
-
-                        if reader.read_line(&mut line).unwrap_or(0) == 0 {
-                            thread::sleep(Duration::from_millis(100));
-                        } else {
-                            print!("\r{}", line);
-                            match lnp.lock() {
-                                Ok(mut lnp_l) => *lnp_l += 1,
-                                Err(_) => {}
-                            }
-                        }
-                    }
-                }
+        loop {
+            let mut line = String::new();
+            if reader.read_line(&mut line).unwrap_or(0) == 0 {
+                thread::sleep(Duration::from_millis(100));
+                continue;
             }
-            Err(poisoned) => {
-                eprintln!("Mutex poisoned: {}", poisoned);
-            }
-        };
-    });
+            let line = line.trim_end();
+            println!("{}", line);
 
-    return CommandResult::Success;
+            ln += 1;
+            if ln == 5 {
+                break;
+            }
+        }
+    }
+
+    CommandResult::Success
 }

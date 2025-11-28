@@ -45,8 +45,8 @@ fn main() -> ExitCode {
             let mut handled = false;
 
             for command in &commands {
+                let args = format!("{} {}", cmd, piped_args);
                 if cmd.starts_with(command.name()) {
-                    let args = format!("{} {}", cmd, piped_args);
                     match command.run(&args) {
                         CommandResult::Output(output) => {
                             if commands_queue.is_empty() {
@@ -63,7 +63,8 @@ fn main() -> ExitCode {
             }
 
             if !handled {
-                executor::execute(&cmd);
+                let args = format!("{} {}", cmd, piped_args);
+                executor::execute(&args);
             }
         }
     }

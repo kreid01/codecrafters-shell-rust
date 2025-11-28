@@ -1,3 +1,4 @@
+use crate::commands::grep::Grep;
 use crate::commands::{
     cat::Cat, cd::Cd, echo::Echo, execute_type::Type, head::Head, ls::Ls, pwd::Pwd, tail::Tail,
     wc::Wc,
@@ -8,6 +9,7 @@ pub mod cd;
 pub mod echo;
 pub mod exe;
 pub mod execute_type;
+pub mod grep;
 pub mod head;
 pub mod ls;
 pub mod pwd;
@@ -36,7 +38,8 @@ pub fn get_commands() -> Vec<Box<dyn Command>> {
         Box::new(Wc),
         Box::new(Tail),
         Box::new(Head),
+        Box::new(Grep),
     ];
 
-    return commands;
+    commands
 }

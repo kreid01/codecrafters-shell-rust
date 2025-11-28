@@ -12,13 +12,13 @@ impl Command for Head {
         "head"
     }
     fn run(&self, cmd: &str) -> CommandResult {
-        let command = cmd.replace("head", "");
-        return head(&command);
+        let command = cmd.replace("head ", "");
+        head(&command)
     }
 }
 
 pub fn head(command: &str) -> CommandResult {
-    return heads_or_tails(command, true);
+    heads_or_tails(command, true)
 }
 
 pub fn heads_or_tails(command: &str, tails: bool) -> CommandResult {
@@ -27,10 +27,10 @@ pub fn heads_or_tails(command: &str, tails: bool) -> CommandResult {
     let count = get_count(&args);
 
     let command_wo_args = command.replace("-n ", "");
-    let re = Regex::new(r"[0-9] ").unwrap();
-    re.replace(&command_wo_args, "");
+    let re = Regex::new(r"\d+ ").unwrap();
+    let cleaned_args = re.replace(&command_wo_args, "").to_string();
 
-    match File::open(command) {
+    match File::open(&cleaned_args) {
         Ok(mut file) => {
             let mut text = String::new();
             file.read_to_string(&mut text).expect("reading file");
@@ -46,20 +46,26 @@ pub fn heads_or_tails(command: &str, tails: bool) -> CommandResult {
             }
         }
         Err(_) => {
-            for line in command_wo_args.lines().take(count) {
-                contents.push(line.to_string());
+            if tails {
+                for line in cleaned_args.lines().rev().take(count) {
+                    contents.push(line.to_string());
+                }
+            } else {
+                for line in cleaned_args.lines().take(count) {
+                    contents.push(line.to_string());
+                }
             }
         }
     };
 
-    return CommandResult::Output(contents.join("\n"));
+    CommandResult::Output(format!("{}\n", contents.join("\n")))
 }
 
-fn get_count(args: &Vec<String>) -> usize {
+fn get_count(args: &[String]) -> usize {
     if args.first().unwrap() == "-n" {
-        let count = args.iter().nth(1).unwrap();
+        let count = args.get(1).unwrap();
         return count.parse::<usize>().unwrap_or(10);
     }
 
-    return 10;
+    10
 }
