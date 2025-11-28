@@ -11,21 +11,17 @@ mod enums;
 mod executor;
 mod utils;
 
-const BUILTINS: [&str; 5] = ["exit", "echo", "type", "pwd", "cd"];
+const BUILTINS: [&str; 6] = ["exit", "echo", "type", "pwd", "cd", "history"];
 
 fn main() -> ExitCode {
     loop {
         print!("\r$ ");
         io::stdout().flush().unwrap();
 
-        let buffer: String;
-
-        match handle_input() {
-            InputResult::Completed(input) => {
-                buffer = input;
-            }
-            InputResult::Exit(code) => return ExitCode::from(code),
-        }
+        let buffer = match handle_input() {
+            InputResult::Completed(input) => input,
+            InputResult::Exit(code) => return code,
+        };
 
         if buffer.is_empty() {
             continue;
