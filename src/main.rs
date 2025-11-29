@@ -43,8 +43,8 @@ fn main() -> ExitCode {
             }
 
             if cmd.starts_with("history -r") {
-                let file_history = history::history_file(cmd);
-                history.push(file_history);
+                let mut file_history = history::history_file(cmd);
+                history.append(&mut file_history);
                 break;
             }
 
