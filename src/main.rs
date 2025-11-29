@@ -26,6 +26,8 @@ fn main() -> ExitCode {
             InputResult::Exit(code) => return code,
         };
 
+        appended_history.push(buffer.to_owned());
+
         if buffer.is_empty() {
             continue;
         }
@@ -45,7 +47,10 @@ fn main() -> ExitCode {
 
             if cmd.starts_with("history -r") {
                 let mut file_history = history::read_file_history(cmd);
+
                 history.append(&mut file_history);
+                appended_history.append(&mut file_history);
+
                 break;
             }
 
@@ -55,14 +60,8 @@ fn main() -> ExitCode {
             }
 
             if cmd.starts_with("history -a") {
-                let history_to_append = history
-                    .iter()
-                    .filter(|x| !appended_history.contains(x))
-                    .map(|x| x.to_string())
-                    .collect();
-                println!("{:?}", history_to_append);
-                history::append_file_history(cmd, &history_to_append);
-                appended_history = history.to_owned();
+                history::append_file_history(cmd, &appended_history);
+                appended_history.clear();
                 break;
             }
 
