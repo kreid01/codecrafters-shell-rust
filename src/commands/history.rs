@@ -60,6 +60,8 @@ pub fn append_file_history(cmd: &str, history: &[String]) {
         .map(|x| x.to_string())
         .collect();
 
+    println!("his{:?}, env{:?}", history, history_env);
+
     let cmd = Path::new(&cmd.replace("history -a ", "")).to_path_buf();
     let _ = writer::append(cmd, history.to_owned());
 }
