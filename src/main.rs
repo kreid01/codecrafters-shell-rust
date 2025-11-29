@@ -60,7 +60,7 @@ fn main() -> ExitCode {
                     .filter(|x| !appended_history.contains(x))
                     .map(|x| x.to_string())
                     .collect();
-                println!("{}", history_to_append);
+                println!("{:?}", history_to_append);
                 history::append_file_history(cmd, &history_to_append);
                 appended_history = history.to_owned();
                 break;
