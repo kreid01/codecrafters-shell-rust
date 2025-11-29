@@ -31,7 +31,7 @@ fn main() -> ExitCode {
             continue;
         }
 
-        if !history.contains(&buffer.to_owned()) {
+        if !&history.contains(&buffer.to_owned()) {
             history.push(buffer.to_owned());
         }
 
