@@ -31,7 +31,7 @@ fn main() -> ExitCode {
             continue;
         }
 
-        if !history.contains(&buffer.trim().to_string()) {
+        if !history.iter().any(|x| x.trim() == buffer.trim()) {
             history.push(buffer.clone());
         }
 
