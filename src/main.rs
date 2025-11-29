@@ -53,6 +53,11 @@ fn main() -> ExitCode {
                 break;
             }
 
+            if cmd.starts_with("history -a") {
+                history::append_file_history(cmd, &history);
+                break;
+            }
+
             if cmd.starts_with("history") {
                 history::history(cmd, &history);
                 break;

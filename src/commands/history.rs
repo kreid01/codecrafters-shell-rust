@@ -33,3 +33,8 @@ pub fn write_file_history(cmd: &str, history: &Vec<String>) {
     let cmd = Path::new(&cmd.replace("history -w ", "")).to_path_buf();
     let _ = writer::write(cmd, history.to_owned());
 }
+
+pub fn append_file_history(cmd: &str, history: &Vec<String>) {
+    let cmd = Path::new(&cmd.replace("history -a ", "")).to_path_buf();
+    let _ = writer::append(cmd, history.to_owned());
+}
