@@ -20,6 +20,8 @@ pub fn handle_input(history: &[String]) -> InputResult {
     let mut stdout = stdout().into_raw_mode().unwrap();
     let stdin = stdin();
 
+    let mut history_index = history.len() - 1;
+
     let mut buffer = String::new();
     let mut last_key: Option<Key> = None;
 
@@ -27,7 +29,7 @@ pub fn handle_input(history: &[String]) -> InputResult {
         match c {
             Key::Char('\n') => {
                 stdout.suspend_raw_mode().unwrap();
-                print!("\n");
+                println!();
                 stdout.activate_raw_mode().unwrap();
                 break;
             }
@@ -68,7 +70,7 @@ pub fn handle_input(history: &[String]) -> InputResult {
                 }
             }
             Key::Backspace => {
-                if buffer.len() == 0 {
+                if buffer.is_empty() {
                     continue;
                 }
                 buffer.pop();
@@ -82,7 +84,10 @@ pub fn handle_input(history: &[String]) -> InputResult {
                 return InputResult::Exit(ExitCode::from(0));
             }
             Key::Up => {
-                print!("{}\r$ {}", clear::CurrentLine, history.first().unwrap());
+                if let Some(cmd) = history.get(history_index) {
+                    print!("{}\r$ {}", clear::CurrentLine, cmd);
+                    history_index -= 1;
+                }
             }
             _ => continue,
         }
@@ -93,5 +98,5 @@ pub fn handle_input(history: &[String]) -> InputResult {
 
     stdout.suspend_raw_mode().unwrap();
 
-    return InputResult::Completed(buffer);
+    InputResult::Completed(buffer)
 }
