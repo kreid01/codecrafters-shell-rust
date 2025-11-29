@@ -42,6 +42,12 @@ fn main() -> ExitCode {
                 return ExitCode::from(0);
             }
 
+            if cmd.starts_with("history -r") {
+                let mut file_history = history::history_file(cmd);
+                history.append(&mut file_history);
+                break;
+            }
+
             if cmd.starts_with("history") {
                 history::history(cmd, &history);
                 break;
