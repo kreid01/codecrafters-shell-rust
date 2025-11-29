@@ -11,7 +11,7 @@ pub fn history(cmd: &str, history: &[String]) {
     }
 }
 
-pub fn history_file(cmd: &str) -> Vec<String> {
+pub fn history_file(cmd: &str) -> String {
     let cmd = cmd.replace("history -r ", "");
     let mut file_history = String::new();
 
@@ -20,7 +20,4 @@ pub fn history_file(cmd: &str) -> Vec<String> {
     }
 
     file_history
-        .split_whitespace()
-        .map(|s| s.to_string())
-        .collect()
 }
