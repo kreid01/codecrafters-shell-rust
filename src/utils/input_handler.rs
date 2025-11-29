@@ -16,7 +16,7 @@ pub enum InputResult {
     Exit(ExitCode),
 }
 
-pub fn handle_input() -> InputResult {
+pub fn handle_input(history: &[String]) -> InputResult {
     let mut stdout = stdout().into_raw_mode().unwrap();
     let stdin = stdin();
 
@@ -80,6 +80,9 @@ pub fn handle_input() -> InputResult {
             }
             Key::Ctrl('c') => {
                 return InputResult::Exit(ExitCode::from(0));
+            }
+            Key::Up => {
+                print!("{}\r$ {}", clear::CurrentLine, history.first().unwrap());
             }
             _ => continue,
         }

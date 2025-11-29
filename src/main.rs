@@ -20,7 +20,7 @@ fn main() -> ExitCode {
         print!("\r$ ");
         io::stdout().flush().unwrap();
 
-        let buffer = match handle_input() {
+        let buffer = match handle_input(&history) {
             InputResult::Completed(input) => input,
             InputResult::Exit(code) => return code,
         };
