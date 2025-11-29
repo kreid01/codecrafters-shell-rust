@@ -120,8 +120,7 @@ pub fn parse_execute_command(command: &str) -> (String, Vec<&str>) {
             .replace(file, "")
             .replace("'", "\\'");
 
-        let mut args: Vec<&str> = vec![file];
-        args.push(file);
+        let args: Vec<&str> = vec![file];
 
         (exe, args)
     } else {

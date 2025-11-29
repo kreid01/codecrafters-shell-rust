@@ -17,6 +17,7 @@ set -e # Exit early if any commands fail
   cargo build --release --target-dir=/tmp/codecrafters-build-shell-rust --manifest-path Cargo.toml
 )
 
+export PATH="/Users/kieranreid/My Rust/codecrafters-shell-rust:$PATH"
 # Copied from .codecrafters/run.sh
 #
 # - Edit this to change how your program runs locally

@@ -76,16 +76,15 @@ pub fn get_commands_and_args(commands: Vec<String>) -> (Vec<String>, Vec<String>
 pub fn execute(command: &str) -> CommandResult {
     let (exe, args) = parser::parse_execute_command(command);
 
-    let input = match Command::new(exe.trim()).args(&args).output() {
+    let output = match Command::new(exe.trim()).args(&args).output() {
         Ok(output) => output,
         Err(_) => {
-            println!("{}: command not found", command.trim());
+            eprintln!("{}: command not found", exe);
             return CommandResult::Failed;
         }
     };
 
-    let output = String::from_utf8_lossy(&input.stdout);
+    print!("{}", String::from_utf8_lossy(&output.stdout));
 
-    print!("{}", output);
     CommandResult::Success
 }

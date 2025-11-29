@@ -31,9 +31,7 @@ fn main() -> ExitCode {
             continue;
         }
 
-        if !history.iter().any(|x| x.trim() == buffer.trim()) {
-            history.push(buffer.clone());
-        }
+        history.push(buffer.clone());
 
         let mut commands_queue: VecDeque<&str> = buffer.split("|").collect();
         let commands = get_commands();
