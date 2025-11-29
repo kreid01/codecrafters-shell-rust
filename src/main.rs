@@ -45,7 +45,9 @@ fn main() -> ExitCode {
             continue;
         }
 
-        history.push(buffer.to_owned());
+        if !history.contains(&buffer.to_owned()) {
+            history.push(buffer.to_owned());
+        }
 
         let mut commands_queue: VecDeque<&str> = buffer.split("|").collect();
         let commands = get_commands();
