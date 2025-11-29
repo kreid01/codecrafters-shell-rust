@@ -53,15 +53,6 @@ pub fn write_file_history(cmd: &str, history: &Vec<String>) {
 }
 
 pub fn append_file_history(cmd: &str, history: &[String]) {
-    let (history_env, _) = get_history_env();
-    let history: Vec<String> = history
-        .iter()
-        .filter(|x| !history_env.contains(x))
-        .map(|x| x.to_string())
-        .collect();
-
-    println!("his{:?}, env{:?}", history, history_env);
-
     let cmd = Path::new(&cmd.replace("history -a ", "")).to_path_buf();
     let _ = writer::append(cmd, history.to_owned());
 }
@@ -84,6 +75,15 @@ pub fn get_history_env() -> (Vec<String>, Vec<String>) {
 
 pub fn write_history_env(history: Vec<String>) {
     if let Ok(history_env) = env::var("HISTFILE") {
+        let history_env_arr: Vec<String> = history_env.split("/n").map(|x| x.to_string()).collect();
+        let history: Vec<String> = history
+            .iter()
+            .filter(|x| !history_env_arr.contains(x))
+            .map(|x| x.to_string())
+            .collect();
+
+        println!("his{:?}, env{:?}", history, history_env);
+
         let path = Path::new(&history_env).to_path_buf();
         let _ = writer::append(path, history);
     }
