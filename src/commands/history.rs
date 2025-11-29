@@ -22,7 +22,7 @@ pub fn history(cmd: &str, history: &mut Vec<String>, appended_history: &mut Vec<
 }
 
 pub fn default_history(cmd: &str, history: &[String]) {
-    let diff = match cmd.replace("history ", "").parse::<usize>() {
+    let diff = match cmd.parse::<usize>() {
         Ok(count) => history.len() - count,
         Err(_) => 0,
     };
@@ -33,7 +33,7 @@ pub fn default_history(cmd: &str, history: &[String]) {
 }
 
 pub fn read_file_history(cmd: &str) -> Vec<String> {
-    let cmd = cmd.replace("history -r ", "");
+    let cmd = cmd.replace("-r ", "");
     let mut file_history = String::new();
 
     if let Ok(file) = get_cat_result(&cmd) {
@@ -48,12 +48,12 @@ pub fn read_file_history(cmd: &str) -> Vec<String> {
 }
 
 pub fn write_file_history(cmd: &str, history: &Vec<String>) {
-    let cmd = Path::new(&cmd.replace("history -w ", "")).to_path_buf();
+    let cmd = Path::new(&cmd.replace("-w ", "")).to_path_buf();
     let _ = writer::write(cmd, history.to_owned());
 }
 
 pub fn append_file_history(cmd: &str, history: &[String]) {
-    let cmd = Path::new(&cmd.replace("history -a ", "")).to_path_buf();
+    let cmd = Path::new(&cmd.replace("-a ", "")).to_path_buf();
     let _ = writer::append(cmd, history.to_owned());
 }
 
@@ -75,10 +75,8 @@ pub fn get_history_env() -> (Vec<String>, Vec<String>) {
 
 pub fn write_history_env(history: Vec<String>) {
     if let Ok(history_env) = env::var("HISTFILE") {
-        let history_env_arr: Vec<String> = history_env
-            .split("/n")
-            .map(|x| x.trim().to_string())
-            .collect();
+        let (history_env_arr, _) = get_history_env();
+
         let history: Vec<String> = history
             .iter()
             .filter(|x| !history_env_arr.contains(&x.trim().to_string()))
