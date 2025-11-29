@@ -20,7 +20,7 @@ pub fn handle_input(history: &[String]) -> InputResult {
     let mut stdout = stdout().into_raw_mode().unwrap();
     let stdin = stdin();
 
-    let mut history_index = history.len() - 1;
+    let mut history_index = history.len();
 
     let mut buffer = String::new();
     let mut last_key: Option<Key> = None;
@@ -84,9 +84,17 @@ pub fn handle_input(history: &[String]) -> InputResult {
                 return InputResult::Exit(ExitCode::from(0));
             }
             Key::Up => {
+                history_index -= 1;
                 if let Some(cmd) = history.get(history_index) {
                     print!("{}\r$ {}", clear::CurrentLine, cmd);
-                    history_index -= 1;
+                    buffer = cmd.to_owned();
+                }
+            }
+            Key::Down => {
+                history_index += 1;
+                if let Some(cmd) = history.get(history_index) {
+                    print!("{}\r$ {}", clear::CurrentLine, cmd);
+                    buffer = cmd.to_owned();
                 }
             }
             _ => continue,
