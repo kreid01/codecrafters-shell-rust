@@ -82,8 +82,6 @@ pub fn write_history_env(history: Vec<String>) {
             .map(|x| x.to_string())
             .collect();
 
-        println!("his{:?}, env{:?}", history, history_env);
-
         let path = Path::new(&history_env).to_path_buf();
         let _ = writer::append(path, history);
     }
