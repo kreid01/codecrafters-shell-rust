@@ -21,23 +21,21 @@ where
     match command {
         _append_output if command.contains("2>>") => {
             append_stderr(command, executor);
-            return CommandResult::Success;
+            CommandResult::Success
         }
         _append_error if command.contains("1>>") || command.contains(">>") => {
             append_stdout(command, executor);
-            return CommandResult::Success;
+            CommandResult::Success
         }
         _redirect_error if command.contains("2>") => {
-            redirect_stderr(&command, executor);
-            return CommandResult::Success;
+            redirect_stderr(command, executor);
+            CommandResult::Success
         }
         _redirect_output if command.contains("1>") || command.contains(">") => {
-            redirect_stdout(&command, executor);
-            return CommandResult::Success;
+            redirect_stdout(command, executor);
+            CommandResult::Success
         }
-        _ => {
-            return default(command);
-        }
+        _ => default(command),
     }
 }
 
@@ -54,9 +52,9 @@ where
 }
 
 pub fn get_args(split_command: Vec<&str>) -> (PathBuf, Vec<String>) {
-    let args = parser::get_formatted_args(&split_command[0]);
+    let args = parser::get_formatted_args(split_command[0]);
     let path = path::Path::new(split_command[1].trim()).to_path_buf();
-    return (path, args);
+    (path, args)
 }
 
 pub fn get_commands_and_args(commands: Vec<String>) -> (Vec<String>, Vec<String>) {
@@ -72,7 +70,7 @@ pub fn get_commands_and_args(commands: Vec<String>) -> (Vec<String>, Vec<String>
         .cloned()
         .collect();
 
-    return (command_wo_args, args);
+    (command_wo_args, args)
 }
 
 pub fn execute(command: &str) -> CommandResult {

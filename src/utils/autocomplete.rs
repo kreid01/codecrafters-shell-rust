@@ -11,7 +11,7 @@ pub fn get_autocomplete_options(command: &str) -> Vec<String> {
         output.push(option.to_string());
     }
 
-    return output;
+    output
 }
 
 pub fn get_autocomplete_prefix(options: &[String]) -> Option<(String, usize)> {
@@ -35,7 +35,7 @@ pub fn autocomplete(command: &String) -> String {
         }
     }
 
-    return format!("{}\x07", command.to_owned());
+    format!("{}\x07", command.to_owned())
 }
 
 fn get_options() -> Vec<String> {
@@ -43,9 +43,8 @@ fn get_options() -> Vec<String> {
     let mut exes = exe::get_exe_paths();
 
     exes.append(&mut builtins);
-    return exes
-        .into_iter()
+    exes.into_iter()
         .collect::<HashSet<_>>()
         .into_iter()
-        .collect::<Vec<String>>();
+        .collect::<Vec<String>>()
 }

@@ -22,7 +22,7 @@ impl Command for Echo {
 }
 
 pub fn echo(command: &str) -> CommandResult {
-    return execute_with_redirect(&command, write_echo, default_echo);
+    execute_with_redirect(command, write_echo, default_echo)
 }
 
 pub fn write_echo(
@@ -56,6 +56,6 @@ pub fn echo_stderr(output_path: &path::PathBuf, lines: Vec<String>) {
 }
 
 pub fn default_echo(command: &str) -> CommandResult {
-    let formatted_command = parser::format_string_command(&command);
-    return CommandResult::Output(formatted_command.to_string());
+    let formatted_command = parser::format_string_command(command);
+    CommandResult::Output(formatted_command.to_string())
 }

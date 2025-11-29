@@ -9,12 +9,12 @@ impl Command for Wc {
     }
     fn run(&self, cmd: &str) -> CommandResult {
         let command = cmd.replace("wc ", "");
-        return wc(&command);
+        wc(&command)
     }
 }
 
 pub fn wc(command: &str) -> CommandResult {
-    let file = File::open(&command);
+    let file = File::open(command);
     let contents: String = match file {
         Ok(mut f) => {
             let mut contents = String::new();
@@ -32,10 +32,10 @@ pub fn wc(command: &str) -> CommandResult {
     );
 
     println!("{}", result);
-    return CommandResult::Success;
+    CommandResult::Success
 }
 
-pub fn get_word_count(string: &String) -> usize {
+pub fn get_word_count(string: &str) -> usize {
     let words_spaced = string.replace("\n", " ");
-    return words_spaced.split_whitespace().count();
+    words_spaced.split_whitespace().count()
 }

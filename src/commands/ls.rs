@@ -27,7 +27,7 @@ impl Command for Ls {
     }
     fn run(&self, cmd: &str) -> CommandResult {
         let command = cmd.replace("ls ", "");
-        return ls(&command);
+        ls(&command)
     }
 }
 
@@ -37,7 +37,7 @@ pub struct LsArgs {
 }
 
 pub fn ls(command: &str) -> CommandResult {
-    return execute_with_redirect(&command, execute_ls, default_ls_with_command);
+    execute_with_redirect(command, execute_ls, default_ls_with_command)
 }
 
 pub fn execute_ls(output_path: &PathBuf, command: &String, args: Vec<String>, executor: &Action) {
@@ -99,11 +99,11 @@ pub fn get_ls_results(command: &str) -> Result<Vec<String>, String> {
                 let file_name = entry.file_name().to_string_lossy().to_string();
                 lines.push(file_name);
             }
-            return Ok(lines);
+            Ok(lines)
         }
         Err(_) => {
             let err = format!("ls: {}: No such file or directory", command);
-            return Err(err);
+            Err(err)
         }
     }
 }
@@ -162,7 +162,7 @@ pub fn get_file_metadata(path: &str) -> String {
         }
     }
 
-    return path.to_string_lossy().to_string();
+    path.to_string_lossy().to_string()
 }
 
 pub fn default_ls_with_command(command: &str) -> CommandResult {
@@ -177,12 +177,10 @@ pub fn default_ls_with_command(command: &str) -> CommandResult {
     }
 
     match get_ls_results(&command) {
-        Ok(lines) => {
-            return CommandResult::Output(lines.join("\n"));
-        }
+        Ok(lines) => CommandResult::Output(lines.join("\n")),
         Err(err) => {
             println!("{}", err);
-            return CommandResult::Failed;
+            CommandResult::Failed
         }
     }
 }
@@ -210,14 +208,12 @@ pub fn default_ls(ls_args: LsArgs) -> CommandResult {
         return CommandResult::Output(lines.join("\n"));
     }
 
-    return CommandResult::Failed;
+    CommandResult::Failed
 }
 
 pub fn check_ls_args(args: Vec<String>) -> LsArgs {
-    let ls_args = LsArgs {
+    LsArgs {
         sort: args.contains(&"-1".to_string()),
         long: args.contains(&"-la".to_string()),
-    };
-
-    return ls_args;
+    }
 }

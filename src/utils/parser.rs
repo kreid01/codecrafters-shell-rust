@@ -35,10 +35,8 @@ pub fn format_string_command(command: &str) -> String {
             c if c.is_whitespace() => {
                 if in_single_quotes || in_double_quotes {
                     formatted_string.push(c);
-                } else {
-                    if last_char_is_not_whitespace(&formatted_string) || escaped {
-                        formatted_string.push(' ');
-                    }
+                } else if last_char_is_not_whitespace(&formatted_string) || escaped {
+                    formatted_string.push(' ');
                 }
             }
             _ => formatted_string.push(x),
@@ -50,16 +48,15 @@ pub fn format_string_command(command: &str) -> String {
     formatted_string
 }
 
-fn last_char_is_not_whitespace(str: &String) -> bool {
-    return str
-        .chars()
+fn last_char_is_not_whitespace(str: &str) -> bool {
+    str.chars()
         .last()
         .map(|ch| !ch.is_whitespace())
-        .unwrap_or(true);
+        .unwrap_or(true)
 }
 
-fn last_char_is_escape(str: &String) -> bool {
-    return str.chars().last().map(|ch| ch == '\\').unwrap_or(false);
+fn last_char_is_escape(str: &str) -> bool {
+    str.chars().last().map(|ch| ch == '\\').unwrap_or(false)
 }
 
 pub fn get_formatted_args(command: &str) -> Vec<String> {
@@ -92,10 +89,8 @@ pub fn get_formatted_args(command: &str) -> Vec<String> {
                     } else {
                         current.push('\\');
                     }
-                } else {
-                    if let Some(next) = chars.next() {
-                        current.push(next);
-                    }
+                } else if let Some(next) = chars.next() {
+                    current.push(next);
                 }
             }
             c if c.is_whitespace() && !in_single && !in_double => {
@@ -119,23 +114,22 @@ pub fn parse_execute_command(command: &str) -> (String, Vec<&str>) {
     if command.starts_with('\'') || command.starts_with("\"") {
         let command = command.trim();
         let commands_split: Vec<&str> = command.split_whitespace().collect();
-        let file = commands_split.iter().rev().nth(0).unwrap();
+        let file = commands_split.iter().next_back().unwrap();
 
-        let exe = format_string_command(&command)
+        let exe = format_string_command(command)
             .replace(file, "")
             .replace("'", "\\'");
 
-        let mut args: Vec<&str> = Vec::new();
+        let mut args: Vec<&str> = vec![file];
         args.push(file);
 
-        return (exe, args);
+        (exe, args)
     } else {
-        let exe = command.split_whitespace().nth(0).unwrap();
+        let exe = command.split_whitespace().next().unwrap();
         let args: Vec<&str> = command
             .split_whitespace()
             .filter(|x| !x.contains(exe))
-            .into_iter()
             .collect();
-        return (exe.to_string(), args);
+        (exe.to_string(), args)
     }
 }

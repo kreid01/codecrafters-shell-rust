@@ -37,5 +37,5 @@ pub fn is_exe(path: &PathBuf) -> bool {
         return permissions.mode() & 0o111 != 0;
     }
 
-    return false;
+    false
 }
