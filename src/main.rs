@@ -15,6 +15,7 @@ const BUILTINS: [&str; 6] = ["exit", "echo", "type", "pwd", "cd", "history"];
 
 fn main() -> ExitCode {
     let mut history: Vec<String> = Vec::new();
+    let mut appended_history: Vec<String> = Vec::new();
 
     loop {
         print!("\r$ ");
@@ -54,7 +55,13 @@ fn main() -> ExitCode {
             }
 
             if cmd.starts_with("history -a") {
-                history::append_file_history(cmd, &history);
+                let history_to_append = history
+                    .iter()
+                    .filter(|x| !appended_history.contains(x))
+                    .map(|x| x.to_string())
+                    .collect();
+                history::append_file_history(cmd, &history_to_append);
+                appended_history = history.to_owned();
                 break;
             }
 
