@@ -52,7 +52,14 @@ pub fn write_file_history(cmd: &str, history: &Vec<String>) {
     let _ = writer::write(cmd, history.to_owned());
 }
 
-pub fn append_file_history(cmd: &str, history: &Vec<String>) {
+pub fn append_file_history(cmd: &str, history: &[String]) {
+    let (history_env, _) = get_history_env();
+    let history: Vec<String> = history
+        .iter()
+        .filter(|x| !history_env.contains(x))
+        .map(|x| x.to_string())
+        .collect();
+
     let cmd = Path::new(&cmd.replace("history -a ", "")).to_path_buf();
     let _ = writer::append(cmd, history.to_owned());
 }
