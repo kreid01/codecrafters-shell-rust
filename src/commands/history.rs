@@ -19,5 +19,9 @@ pub fn history_file(cmd: &str) -> Vec<String> {
         file_history = file;
     }
 
-    file_history.split("\n").map(|s| s.to_string()).collect()
+    file_history
+        .trim()
+        .split("\n")
+        .map(|s| s.to_string())
+        .collect()
 }
