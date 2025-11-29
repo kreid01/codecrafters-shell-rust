@@ -9,7 +9,7 @@ impl Command for Cd {
         "cd"
     }
     fn run(&self, cmd: &str) -> CommandResult {
-        return cd(cmd);
+        cd(cmd)
     }
 }
 
@@ -31,13 +31,13 @@ pub fn cd(command: &str) -> CommandResult {
         no_file_or_directory(directory);
     }
 
-    return CommandResult::Success;
+    CommandResult::Success
 }
 
 pub fn cd_absolute(directory: &str) -> Option<()> {
     let path = Path::new(directory);
     let new_dir_path = path.join(directory);
-    return go_to_directory(new_dir_path);
+    go_to_directory(new_dir_path)
 }
 
 pub fn cd_home() -> Option<()> {
@@ -58,12 +58,12 @@ pub fn cd_back(command: &str) -> Option<()> {
         .last()
         .unwrap();
 
-    return go_to_directory(path.to_path_buf());
+    go_to_directory(path.to_path_buf())
 }
 
 pub fn get_curr_directory() -> PathBuf {
     let curr_dir = env::current_dir().unwrap();
-    return Path::new(&curr_dir).to_path_buf();
+    Path::new(&curr_dir).to_path_buf()
 }
 
 pub fn cd_relative(directory: &str) -> Option<()> {
@@ -75,7 +75,7 @@ pub fn cd_relative(directory: &str) -> Option<()> {
         .replace("./", "");
     let next_dir_path = curr_dir.join(next_dir);
 
-    return go_to_directory(next_dir_path);
+    go_to_directory(next_dir_path)
 }
 
 pub fn go_to_directory(directory: PathBuf) -> Option<()> {
@@ -89,6 +89,6 @@ pub fn go_to_directory(directory: PathBuf) -> Option<()> {
 pub fn no_file_or_directory(directory: &str) {
     println!(
         "cd: {}: No such file or directory",
-        directory.split_whitespace().nth(0).unwrap()
+        directory.split_whitespace().next().unwrap()
     )
 }

@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::env;
 use std::io::{self, Write};
 use std::process::ExitCode;
 
@@ -14,8 +15,11 @@ mod utils;
 const BUILTINS: [&str; 6] = ["exit", "echo", "type", "pwd", "cd", "history"];
 
 fn main() -> ExitCode {
+    let history_env = env::var("HISTFILE");
     let mut history: Vec<String> = Vec::new();
     let mut appended_history: Vec<String> = Vec::new();
+
+    println!("{:?}", history_env);
 
     loop {
         print!("\r$ ");
