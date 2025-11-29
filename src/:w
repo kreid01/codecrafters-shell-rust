@@ -20,12 +20,7 @@ fn main() -> ExitCode {
     let mut appended_history: Vec<String> = Vec::new();
 
     if let Ok(history_env) = env::var("HISTFILE") {
-        if let Ok(history_cat) = get_cat_result(&history_env) {
-            for line in history_cat.lines() {
-                history.push(line.to_string());
-                appended_history.push(line.to_string());
-            }
-        }
+        let env = get_cat_result(history_env)
     }
 
     loop {
