@@ -1,4 +1,7 @@
+use std::path::Path;
+
 use crate::commands::cat::get_cat_result;
+use crate::utils::writer;
 
 pub fn history(cmd: &str, history: &[String]) {
     let diff = match cmd.replace("history ", "").parse::<usize>() {
@@ -11,7 +14,7 @@ pub fn history(cmd: &str, history: &[String]) {
     }
 }
 
-pub fn history_file(cmd: &str) -> Vec<String> {
+pub fn read_file_history(cmd: &str) -> Vec<String> {
     let cmd = cmd.replace("history -r ", "");
     let mut file_history = String::new();
 
@@ -24,4 +27,9 @@ pub fn history_file(cmd: &str) -> Vec<String> {
         .split("\n")
         .map(|s| s.to_string())
         .collect()
+}
+
+pub fn write_file_history(cmd: &str, history: &Vec<String>) {
+    let cmd = Path::new(&cmd.replace("history -w ", "")).to_path_buf();
+    let _ = writer::write(cmd, history.to_owned());
 }
