@@ -4,7 +4,6 @@ use std::io::{self, Write};
 use std::path::Path;
 use std::process::ExitCode;
 
-use crate::commands::cat::get_cat_result;
 use crate::commands::{get_commands, history, CommandResult};
 use crate::utils::input_handler::{handle_input, InputResult};
 use crate::utils::writer;
@@ -18,21 +17,11 @@ mod utils;
 const BUILTINS: [&str; 6] = ["exit", "echo", "type", "pwd", "cd", "history"];
 
 fn main() -> ExitCode {
-    let mut history: Vec<String> = Vec::new();
-    let mut appended_history: Vec<String> = Vec::new();
-
-    if let Ok(history_env) = env::var("HISTFILE") {
-        if let Ok(history_cat) = get_cat_result(&history_env) {
-            for line in history_cat.lines() {
-                history.push(line.to_string());
-                appended_history.push(line.to_string());
-            }
-        }
-    }
-
     loop {
         print!("\r$ ");
         io::stdout().flush().unwrap();
+
+        let (mut history, mut appended_history) = history::get_history_env();
 
         let buffer = match handle_input(&history) {
             InputResult::Completed(input) => input,
@@ -57,35 +46,12 @@ fn main() -> ExitCode {
         while let Some(cmd) = commands_queue.pop_front() {
             let cmd = cmd.trim();
             if cmd.starts_with("exit") {
-                if let Ok(history_env) = env::var("HISTFILE") {
-                    let path = Path::new(&history_env).to_path_buf();
-                    let _ = writer::append(path, history);
-                }
+                history::write_history_env(history);
                 return ExitCode::from(0);
             }
 
-            if cmd.starts_with("history -r") {
-                let mut file_history = history::read_file_history(cmd);
-
-                history.append(&mut file_history);
-                appended_history.append(&mut file_history);
-
-                break;
-            }
-
-            if cmd.starts_with("history -w") {
-                history::write_file_history(cmd, &history);
-                break;
-            }
-
-            if cmd.starts_with("history -a") {
-                history::append_file_history(cmd, &appended_history);
-                appended_history.clear();
-                break;
-            }
-
             if cmd.starts_with("history") {
-                history::history(cmd, &history);
+                history::history(cmd, &mut history, &mut appended_history);
                 break;
             }
 
