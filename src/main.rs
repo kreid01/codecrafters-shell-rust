@@ -1,11 +1,13 @@
 use std::collections::VecDeque;
 use std::env;
 use std::io::{self, Write};
+use std::path::Path;
 use std::process::ExitCode;
 
 use crate::commands::cat::get_cat_result;
 use crate::commands::{get_commands, history, CommandResult};
 use crate::utils::input_handler::{handle_input, InputResult};
+use crate::utils::writer;
 
 mod actions;
 mod commands;
@@ -53,6 +55,10 @@ fn main() -> ExitCode {
         while let Some(cmd) = commands_queue.pop_front() {
             let cmd = cmd.trim();
             if cmd.starts_with("exit") {
+                if let Ok(history_env) = env::var("HISTFILE") {
+                    let path = Path::new(&history_env).to_path_buf();
+                    let _ = writer::append(path, history);
+                }
                 return ExitCode::from(0);
             }
 
