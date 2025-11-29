@@ -12,12 +12,12 @@ pub fn history(cmd: &str, history: &mut Vec<String>, appended_history: &mut Vec<
             history.append(&mut file_history);
             appended_history.append(&mut file_history);
         }
-        command if command.starts_with("-w ") => write_file_history(&command, &appended_history),
+        command if command.starts_with("-w ") => write_file_history(&command, appended_history),
         command if command.starts_with("-a ") => {
-            append_file_history(&command, &appended_history);
+            append_file_history(&command, appended_history);
             appended_history.clear();
         }
-        _ => default_history(&command, &history),
+        _ => default_history(&command, history),
     }
 }
 

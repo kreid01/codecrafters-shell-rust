@@ -1,12 +1,9 @@
 use std::collections::VecDeque;
-use std::env;
 use std::io::{self, Write};
-use std::path::Path;
 use std::process::ExitCode;
 
 use crate::commands::{get_commands, history, CommandResult};
 use crate::utils::input_handler::{handle_input, InputResult};
-use crate::utils::writer;
 
 mod actions;
 mod commands;
@@ -17,11 +14,11 @@ mod utils;
 const BUILTINS: [&str; 6] = ["exit", "echo", "type", "pwd", "cd", "history"];
 
 fn main() -> ExitCode {
+    let (mut history, mut appended_history) = history::get_history_env();
+
     loop {
         print!("\r$ ");
         io::stdout().flush().unwrap();
-
-        let (mut history, mut appended_history) = history::get_history_env();
 
         let buffer = match handle_input(&history) {
             InputResult::Completed(input) => input,
