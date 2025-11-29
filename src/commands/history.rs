@@ -75,10 +75,13 @@ pub fn get_history_env() -> (Vec<String>, Vec<String>) {
 
 pub fn write_history_env(history: Vec<String>) {
     if let Ok(history_env) = env::var("HISTFILE") {
-        let history_env_arr: Vec<String> = history_env.split("/n").map(|x| x.to_string()).collect();
+        let history_env_arr: Vec<String> = history_env
+            .split("/n")
+            .map(|x| x.trim().to_string())
+            .collect();
         let history: Vec<String> = history
             .iter()
-            .filter(|x| !history_env_arr.contains(x))
+            .filter(|x| !history_env_arr.contains(&x.trim().to_string()))
             .map(|x| x.to_string())
             .collect();
 
